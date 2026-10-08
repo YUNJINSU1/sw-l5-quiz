@@ -286,6 +286,7 @@
     <button id="retryWrong" class="hide">틀린 문제 다시</button>
     <button id="reset" class="hide">오답 초기화</button>
     <button id="prev" class="hide">이전</button>
+    <button id="dunno" class="hide">모름</button>
     <button id="go" class="primary">시작</button>
   </div>
 </div>
@@ -313,7 +314,7 @@ const show = (name, title = APP) => {
   ["setup", "quiz", "done"].forEach(s => $(s).classList.toggle("hide", s !== name));
   document.title = title;
 };
-const bar = (...visible) => ["quit", "retryWrong", "reset", "prev"].forEach(b =>
+const bar = (...visible) => ["quit", "retryWrong", "reset", "prev", "dunno"].forEach(b =>
   $(b).classList.toggle("hide", !visible.includes(b)));
 const setGo = (text, onclick, disabled = false) => {
   $("go").textContent = text; $("go").onclick = onclick; $("go").disabled = disabled;
@@ -451,14 +452,15 @@ function mount(q, box, initial, { onChange } = {}) {
       keys: buttons,
       read: () => (multi ? [...picked] : picked),
       ready: () => (multi ? picked.size === want : Number.isInteger(picked)),
-      lock() {
+      // gaveUp: '모름'으로 답을 포기한 경우. 고른 보기는 무시하고 정답만 보여준다
+      lock(res, gaveUp) {
         const right = new Set(multi ? q.a : [q.a]);
         buttons.forEach(b => {
-          const idx = +b.dataset.idx, chose = multi ? picked.has(idx) : picked === idx;
+          const idx = +b.dataset.idx, chose = !gaveUp && (multi ? picked.has(idx) : picked === idx);
           b.disabled = true;
           b.removeAttribute("aria-pressed");
           if (right.has(idx) && chose) { b.classList.add("correct"); b.append(mark(true, "✓ 정답")); }
-          else if (right.has(idx)) { b.classList.add("missed"); b.append(mark(true, multi ? "✓ 정답 (안 고름)" : "✓ 정답")); }
+          else if (right.has(idx)) { b.classList.add("missed"); b.append(mark(true, multi && !gaveUp ? "✓ 정답 (안 고름)" : "✓ 정답")); }
           else if (chose) { b.classList.add("wrong"); b.append(mark(false, "✗ 고른 오답")); }
           else b.classList.add("dim");
         });
@@ -486,14 +488,20 @@ function mount(q, box, initial, { onChange } = {}) {
     return {
       read: () => rows.map(({ sel }) => (sel.value === "" ? undefined : +sel.value)),
       ready: () => rows.every(({ sel }) => sel.value !== ""),
-      lock(res) {
+      lock(res, gaveUp) {
         rows.forEach(({ row, sel }, n) => {
+          const answer = `정답: ${letter(q.a[n])}. ${q.right[q.a[n]]}`;
+          if (gaveUp) {
+            sel.disabled = true;
+            row.append(el("span", { className: "status", textContent: answer }));
+            return;
+          }
           const ok = res.parts[n];
           sel.disabled = true;
           sel.setAttribute("aria-invalid", String(!ok));
           row.classList.add(ok ? "ok" : "no");
           row.append(el("span", { className: "status" }, mark(ok, ok ? "✓ 맞음" : "✗ 틀림"),
-            ok ? null : ` · 정답: ${letter(q.a[n])}. ${q.right[q.a[n]]}`));
+            ok ? null : ` · ${answer}`));
         });
       },
     };
@@ -528,8 +536,13 @@ function mount(q, box, initial, { onChange } = {}) {
       autofocus: true,
       read: () => (type === "short" ? rows[0].input.value : rows.map(r => r.input.value)),
       ready: () => rows.some(r => r.input.value.trim()),
-      lock(res) {
+      lock(res, gaveUp) {
         rows.forEach(({ row, input }, n) => {
+          if (gaveUp) {
+            input.readOnly = true;
+            if (type === "blanks") row.append(el("span", { className: "status", textContent: `정답: ${q.blanks[n].accept[0]}` }));
+            return;
+          }
           const ok = res.parts ? res.parts[n] : res.ok;
           input.readOnly = true;
           input.setAttribute("aria-invalid", String(!ok));
@@ -605,26 +618,39 @@ function render() {
   if (L.questionType(q) === "self") {
     view = mount(q, $("answer"), undefined);
     setGo("정답 보기", revealSelf);
+    bar("quit");
   } else {
     view = mount(q, $("answer"), undefined, {
       onChange: () => { if (!answered) $("go").disabled = !view.ready(); },
     });
     setGo("채점", submit, true);
+    bar("quit", "dunno");
+    $("dunno").onclick = giveUp;
   }
   focusQuestion();
 }
 
 function submit() {
   if (answered || !view.ready()) return;
+  conclude(L.grade(deck[i], view.read()), false);
+}
+
+// 모름: 답을 쓰지 않고 정답과 해설을 바로 본다. 오답으로 세어 오답노트에 남긴다
+function giveUp() {
+  if (answered) return;
+  conclude({ ok: false }, true);
+}
+
+function conclude(res, gaveUp) {
   answered = true;
-  const q = deck[i], res = L.grade(q, view.read());
-  view.lock(res);
+  const q = deck[i];
+  view.lock(res, gaveUp);
   if (res.ok) hit++; else missed.push(q);
   record(q, res.ok); saveWrong();
 
   $("explain").className = res.ok ? "ok" : "no";
-  $("explain").replaceChildren(...explainBlock(q, res.ok ? "정답" : "오답"));
-  if (!res.ok && TEXT_TYPES.includes(L.questionType(q))) {
+  $("explain").replaceChildren(...explainBlock(q, gaveUp ? "모름 · 정답 확인" : res.ok ? "정답" : "오답"));
+  if (!gaveUp && !res.ok && TEXT_TYPES.includes(L.questionType(q))) {
     // 같은 뜻을 다르게 쓴 경우를 위한 수동 인정. 다시 누르면 취소된다.
     let accepted = false;
     const btn = el("button", { className: "accept-btn", type: "button", textContent: "정답으로 인정" });
@@ -641,8 +667,9 @@ function submit() {
     $("explain").append(btn);
   }
   practiceScore();
+  bar("quit");
   setGo(i + 1 < deck.length ? "다음 문제" : "결과 보기", next);
-  announce(`${res.ok ? "정답" : "오답"}. 정답은 ${L.answerText(q)}`);
+  announce(`${gaveUp ? "모름" : res.ok ? "정답" : "오답"}. 정답은 ${L.answerText(q)}`);
   $("go").focus({ preventScroll: true });
   revealFeedback();
 }
