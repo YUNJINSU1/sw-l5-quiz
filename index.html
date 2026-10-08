@@ -12,12 +12,14 @@
     --bg: #fff; --fg: #14161a; --muted: #5c6370;
     --line: #dfe3e8; --card: #fff; --raise: #f5f6f8;
     --ok: #157347; --no: #c0392b; --accent: #2f6feb;
+    --on-fill: #fff; /* accent·ok·no로 채운 면 위의 글자 */
     --r: 12px;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #14161a; --fg: #e8eaed; --muted: #9aa1ac;
             --line: #2c3038; --card: #1b1e24; --raise: #22262e;
-            --ok: #2ea56a; --no: #e5534b; --accent: #6b9bff; }
+            --ok: #2ea56a; --no: #e5534b; --accent: #6b9bff;
+            --on-fill: #14161a; }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -29,7 +31,7 @@
     font-variant-numeric: tabular-nums;
   }
   .wrap {
-    max-width: 720px; margin: 0 auto;
+    display: block; max-width: 720px; margin: 0 auto;
     padding: 24px 16px calc(120px + env(safe-area-inset-bottom));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
@@ -38,6 +40,8 @@
   h2 { font-size: 1.1rem; margin: 0 0 12px; text-wrap: balance; }
   .muted { color: var(--muted); font-size: .875rem; }
   a { color: var(--accent); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+             overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   /* ── 컨트롤 ───────────────────────────── */
   button, select, input[type=text] {
@@ -53,13 +57,14 @@
   }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button:disabled { cursor: default; }
-  .primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .primary { background: var(--accent); color: var(--on-fill); border-color: var(--accent); font-weight: 600; }
   @media (hover: hover) { .primary:not(:disabled):hover { filter: brightness(1.08); background: var(--accent); } }
   .primary:disabled { opacity: .55; }
 
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field > span { font-size: .8rem; color: var(--muted); }
   .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .grid .wide { grid-column: 1 / -1; }
   select { width: 100%; }
   .check { display: flex; align-items: center; gap: 10px; padding: 12px 14px;
            border: 1px solid var(--line); border-radius: var(--r); background: var(--card); cursor: pointer; }
@@ -70,6 +75,7 @@
   .exam-card { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
   .exam-card h2 { margin: 0; }
   .exam-card p { margin: 0; }
+  @media (hover: none) { .kbd-hint { display: none; } }
 
   /* ── 문제 ─────────────────────────────── */
   .tag { display: inline-block; font-size: .75rem; color: var(--muted);
@@ -77,6 +83,7 @@
   .qtext { font-size: 1.1rem; font-weight: 600; margin: 12px 0 20px;
            white-space: pre-wrap; overflow-wrap: break-word; text-wrap: pretty; }
   .qtext.long { font-size: 1rem; font-weight: 500; }
+  .qtext:focus { outline: none; } /* 새 문제로 넘어갈 때 읽기 시작점으로만 쓰는 포커스 */
   .hint { margin: -8px 0 12px; }
   .choice {
     display: flex; align-items: flex-start; gap: 12px; width: 100%;
@@ -88,15 +95,21 @@
     background: var(--raise); border: 1px solid var(--line);
     font-size: .8rem; display: grid; place-items: center; font-weight: 600;
   }
-  .choice > span:last-child { min-width: 0; }
+  .choice .txt { flex: 1; min-width: 0; }
+  .choice .mark { align-self: center; }
   .choice[aria-pressed=true] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-  .choice[aria-pressed=true] .key { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .choice.correct { background: var(--ok); border-color: var(--ok); color: #fff; box-shadow: none; }
-  .choice.wrong   { background: var(--no); border-color: var(--no); color: #fff; box-shadow: none; }
+  .choice[aria-pressed=true] .key { background: var(--accent); border-color: var(--accent); color: var(--on-fill); }
+  .choice.correct { background: var(--ok); border-color: var(--ok); color: var(--on-fill); box-shadow: none; }
+  .choice.wrong   { background: var(--no); border-color: var(--no); color: var(--on-fill); box-shadow: none; }
   .choice.missed  { border-color: var(--ok); box-shadow: inset 0 0 0 2px var(--ok); }
-  .choice.correct .key, .choice.wrong .key { background: rgba(255,255,255,.22); border-color: transparent; color: #fff; }
+  .choice.missed .mark { color: var(--ok); }
+  .choice.correct .key, .choice.wrong .key { background: transparent; border-color: currentColor; color: inherit; }
   .choice:disabled { opacity: 1; }
   .choice.dim:disabled { opacity: .45; }
+  .mark { font-size: .85rem; font-weight: 700; white-space: nowrap; }
+  .mark.ok { color: var(--ok); }
+  .mark.no { color: var(--no); }
+  .choice.correct .mark, .choice.wrong .mark { color: inherit; }
   .reference {
     margin: 0 0 14px; padding: 14px 14px 14px 36px;
     border: 1px solid var(--line); border-radius: var(--r); background: var(--raise);
@@ -110,15 +123,16 @@
   .row > .lead { font-weight: 600; overflow-wrap: break-word; }
   .row.ok select, .row.ok input { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
   .row.no select, .row.no input { border-color: var(--no); box-shadow: inset 0 0 0 1px var(--no); }
-  .row .fix { font-size: .875rem; color: var(--ok); }
+  .row .status { font-size: .875rem; overflow-wrap: break-word; }
   input[readonly], select:disabled { opacity: 1; cursor: default; }
 
   pre.code {
-    margin: 8px 0 0; padding: 12px; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+    margin: 8px 0 0; padding: 12px; overflow-x: auto; white-space: pre-wrap; overflow-wrap: break-word;
     background: var(--card); border: 1px solid var(--line); border-radius: 8px;
     font: .85rem/1.5 ui-monospace, "SF Mono", Consolas, "D2Coding", monospace;
   }
-  pre.qbody { margin: -8px 0 16px; background: var(--raise); max-height: 55vh; overflow: auto; }
+  /* 문제 본문의 표·소스는 행을 끊지 않고 이 블록만 가로로 스크롤한다 */
+  pre.qbody { margin: -8px 0 16px; background: var(--raise); white-space: pre; }
 
   #explain { border-radius: var(--r); padding: 14px; margin-top: 16px;
              background: var(--raise); border-left: 4px solid var(--muted);
@@ -130,6 +144,14 @@
   .src { margin-top: 8px; }
   .accept-btn { margin-top: 10px; }
 
+  /* ── 모의고사 문항 이동 ───────────────── */
+  #examNav { margin-top: 16px; }
+  #examNav p { margin: 0 0 8px; }
+  .qnav { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+  .qnav button { min-height: 44px; padding: 6px 0; font-weight: 600; }
+  .qnav button.done { background: var(--accent); border-color: var(--accent); color: var(--on-fill); }
+  .qnav button[aria-current=step] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+
   /* ── 진행 바 & 하단 바 ────────────────── */
   .top { position: sticky; top: 0; background: var(--bg); padding: 8px 0 12px; z-index: 2; }
   progress { width: 100%; height: 6px; border: 0; border-radius: 3px;
@@ -138,6 +160,7 @@
   progress::-webkit-progress-value { background: var(--accent); border-radius: 3px; }
   progress::-moz-progress-bar { background: var(--accent); border-radius: 3px; }
   .stats { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  .stats > span:last-child { display: flex; gap: 12px; white-space: nowrap; }
   #timer { font-weight: 600; color: var(--fg); }
   #timer.warn { color: var(--no); }
 
@@ -151,6 +174,13 @@
   .bar .primary { flex: 1; justify-content: center; }
   kbd { font: inherit; font-size: .75rem; background: var(--raise);
         border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+
+  /* 확대하거나 가로로 눕혀 높이가 낮을 때는 고정 영역을 줄여 문제 칸을 넓힌다 */
+  @media (max-height: 480px) {
+    .top { position: static; }
+    .bar { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+    .bar button { padding-top: 6px; padding-bottom: 6px; }
+  }
 
   table.units { width: 100%; border-collapse: collapse; margin: 16px 0 8px; }
   table.units th, table.units td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
@@ -170,7 +200,7 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
 
   <!-- ── 설정 화면 ───────────────────────── -->
   <section id="setup">
@@ -179,7 +209,7 @@
     <p class="muted" id="packsource"></p>
 
     <div class="grid" style="margin:20px 0 12px">
-      <label class="field"><span>과목</span><select id="pack"></select></label>
+      <label class="field wide"><span>과목</span><select id="pack"></select></label>
       <label class="field"><span>분류</span><select id="cat"></select></label>
       <label class="field"><span>문항 수</span>
         <select id="count">
@@ -199,7 +229,7 @@
       <button id="examStart">모의고사 시작</button>
     </div>
 
-    <p class="muted" style="margin-top:20px">
+    <p class="muted kbd-hint" style="margin-top:20px">
       키보드: <kbd>1</kbd>–<kbd>9</kbd> 보기 선택 · <kbd>Enter</kbd> 채점·다음 문제
     </p>
   </section>
@@ -210,17 +240,22 @@
       <progress id="bar" value="0" max="1" aria-label="진행률"></progress>
       <div class="stats muted">
         <span id="pos"></span>
-        <span><span id="score" aria-live="polite"></span> <span id="timer" class="hide" role="timer"></span></span>
+        <span><span id="score"></span><span id="timer" class="hide" role="timer"></span></span>
       </div>
     </div>
 
     <div class="card">
       <span class="tag" id="qcat"></span>
-      <h2 class="qtext" id="q"></h2>
+      <h2 class="qtext" id="q" tabindex="-1"></h2>
       <pre class="code qbody hide" id="qbody"></pre>
       <div id="answer"></div>
-      <div id="explain" class="hide" aria-live="polite"></div>
+      <div id="explain" class="hide"></div>
     </div>
+
+    <nav id="examNav" class="hide" aria-label="문항 이동">
+      <p class="muted" id="examLeft"></p>
+      <div class="qnav" id="qnav"></div>
+    </nav>
   </section>
 
   <!-- ── 결과 화면 ───────────────────────── -->
@@ -239,7 +274,10 @@
       <ol class="review" id="review"></ol>
     </div>
   </section>
-</div>
+
+  <!-- 채점 결과 등 화면 읽기 프로그램용 알림. 처음부터 비어 있는 채로 둔다 -->
+  <p id="announce" class="sr-only" role="status"></p>
+</main>
 
 <!-- ── 하단 액션 바 ──────────────────────── -->
 <div class="bar">
@@ -262,6 +300,7 @@ const el = (tag, props = {}, ...kids) => {
   return n;
 };
 const TEXT_TYPES = ["short", "blanks", "list"];
+const APP = "문제은행";
 
 let pack = null, wrong = new Set();
 // 연습: deck/i/hit/missed. 모의고사: paper/responses/results.
@@ -270,13 +309,24 @@ let paper = [], responses = [], results = [], deadline = 0, ticker = 0, timedOut
 
 const wrongKey = () => `question-bank:${pack.id}:wrong`;
 const saveWrong = () => localStorage.setItem(wrongKey(), JSON.stringify([...wrong]));
-const show = name => ["setup", "quiz", "done"].forEach(s => $(s).classList.toggle("hide", s !== name));
+const show = (name, title = APP) => {
+  ["setup", "quiz", "done"].forEach(s => $(s).classList.toggle("hide", s !== name));
+  document.title = title;
+};
 const bar = (...visible) => ["quit", "retryWrong", "reset", "prev"].forEach(b =>
   $(b).classList.toggle("hide", !visible.includes(b)));
 const setGo = (text, onclick, disabled = false) => {
   $("go").textContent = text; $("go").onclick = onclick; $("go").disabled = disabled;
 };
 const record = (q, ok) => { if (ok) wrong.delete(q.id); else wrong.add(q.id); };
+const mark = (ok, text) => el("span", { className: `mark ${ok ? "ok" : "no"}`, textContent: text });
+const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+
+// 같은 문장을 연달아 넣어도 다시 읽히도록 비웠다가 채운다
+function announce(text) {
+  $("announce").textContent = "";
+  requestAnimationFrame(() => { $("announce").textContent = text; });
+}
 
 // ── 로딩 ─────────────────────────────────
 async function boot() {
@@ -290,7 +340,9 @@ async function boot() {
 
 async function loadPack() {
   localStorage.setItem("question-bank:lastPack", $("pack").value);
-  pack = await (await fetch("packs/" + $("pack").value)).json();
+  const res = await fetch("packs/" + $("pack").value);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  pack = await res.json();
   pack.questions.forEach(q => q.id = L.qid(q.q));
 
   const known = new Set(pack.questions.map(q => q.id));
@@ -314,11 +366,26 @@ async function loadPack() {
   toSetup();
 }
 
+function showLoadError(e) {
+  const local = location.protocol === "file:";
+  document.querySelector(".wrap").replaceChildren(
+    el("h1", { textContent: "문제를 불러오지 못했습니다" }),
+    el("p", { textContent: local
+      ? "파일을 직접 열면 문제를 불러올 수 없습니다. 이 폴더에서 python3 -m http.server 8000을 실행한 뒤 http://localhost:8000 으로 여세요."
+      : "인터넷 연결을 확인한 뒤 다시 시도하세요." }),
+    local ? null : el("button", { className: "primary", type: "button", textContent: "다시 시도",
+      onclick: () => location.reload() }),
+    el("p", { className: "muted", textContent: `오류 내용: ${e?.message || e}` }));
+  document.querySelector(".bar")?.remove();
+  document.title = `불러오기 실패 · ${APP}`;
+}
+
 // ── 화면 전환 ────────────────────────────
 function toSetup() {
   stopTimer();
   mode = "practice";
   show("setup");
+  $("examNav").classList.add("hide");
   const n = wrong.size;
   $("wrongInfo").textContent = n ? `· 현재 ${n}문항` : "· 아직 없음";
   $("wrongOnly").disabled = !n;
@@ -341,15 +408,16 @@ function start(ids) {
   i = 0; hit = 0; missed = [];
   show("quiz");
   $("timer").classList.add("hide");
+  $("examNav").classList.add("hide");
   bar("quit");
   $("quit").onclick = toSetup;
   render();
 }
 
 // ── 답안 입력 UI ─────────────────────────
-// 유형마다 {read, ready, lock}을 돌려준다. onChange는 입력이 바뀔 때마다 불린다.
-// instant=true(연습 모드 단일 선택)면 보기를 누르는 즉시 onSubmit을 부른다.
-function mount(q, box, initial, { onChange, onSubmit, instant }) {
+// 유형마다 {read, ready, lock, keys?}를 돌려준다. onChange는 입력이 바뀔 때마다 불린다.
+// lock(res)은 채점 결과를 색과 함께 ✓/✗ 글자로 표시한다(색만으로 구분하지 않는다).
+function mount(q, box, initial, { onChange } = {}) {
   const type = L.questionType(q);
   box.replaceChildren();
 
@@ -362,7 +430,8 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
     if (hint) box.append(hint);
     const buttons = L.shuffle(q.c.map((text, idx) => ({ text, idx }))).map(({ text, idx }, n) => {
       const b = el("button", { className: "choice", type: "button" },
-        el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }), el("span", { textContent: text }));
+        el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }),
+        el("span", { className: "txt", textContent: text }));
       b.dataset.idx = idx;
       const sync = () => b.setAttribute("aria-pressed", multi ? picked.has(idx) : picked === idx);
       sync();
@@ -372,7 +441,6 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
         buttons.forEach(x => x.sync());
         updateHint();
         onChange?.();
-        if (instant) onSubmit();
       };
       b.sync = sync;
       box.append(b);
@@ -389,8 +457,9 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
           const idx = +b.dataset.idx, chose = multi ? picked.has(idx) : picked === idx;
           b.disabled = true;
           b.removeAttribute("aria-pressed");
-          if (right.has(idx)) b.classList.add(chose ? "correct" : "missed");
-          else if (chose) b.classList.add("wrong");
+          if (right.has(idx) && chose) { b.classList.add("correct"); b.append(mark(true, "✓ 정답")); }
+          else if (right.has(idx)) { b.classList.add("missed"); b.append(mark(true, multi ? "✓ 정답 (안 고름)" : "✓ 정답")); }
+          else if (chose) { b.classList.add("wrong"); b.append(mark(false, "✗ 고른 오답")); }
           else b.classList.add("dim");
         });
       },
@@ -419,10 +488,12 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
       ready: () => rows.every(({ sel }) => sel.value !== ""),
       lock(res) {
         rows.forEach(({ row, sel }, n) => {
+          const ok = res.parts[n];
           sel.disabled = true;
-          row.classList.add(res.parts[n] ? "ok" : "no");
-          if (!res.parts[n]) row.append(el("span", { className: "fix",
-            textContent: `정답: ${letter(q.a[n])}. ${q.right[q.a[n]]}` }));
+          sel.setAttribute("aria-invalid", String(!ok));
+          row.classList.add(ok ? "ok" : "no");
+          row.append(el("span", { className: "status" }, mark(ok, ok ? "✓ 맞음" : "✗ 틀림"),
+            ok ? null : ` · 정답: ${letter(q.a[n])}. ${q.right[q.a[n]]}`));
         });
       },
     };
@@ -435,8 +506,10 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
     const values = type === "short" ? [initial ?? ""] : (initial || []);
     if (type === "list") box.append(el("p", { className: "muted hint", textContent: `${q.n}가지를 순서와 상관없이 쓰세요` }));
     const rows = labels.map((label, n) => {
-      const input = el("input", { type: "text", autocomplete: "off", spellcheck: false,
-        value: values[n] ?? "", ariaLabel: label ? `${label} 답` : "답" });
+      const input = el("input", { type: "text", autocomplete: "off", spellcheck: false, value: values[n] ?? "" });
+      // 단답은 문제 문장이 곧 이름이다. 여러 칸이면 칸 번호를 이름으로, 문제를 설명으로 붙인다.
+      if (label) { input.setAttribute("aria-label", `${label} 답`); input.setAttribute("aria-describedby", "q"); }
+      else input.setAttribute("aria-labelledby", "q");
       input.setAttribute("autocapitalize", "off");
       input.setAttribute("enterkeyhint", n < labels.length - 1 ? "next" : "done");
       input.oninput = () => onChange?.();
@@ -452,12 +525,19 @@ function mount(q, box, initial, { onChange, onSubmit, instant }) {
     });
     setTimeout(() => rows[0].input.focus({ preventScroll: true }), 0);
     return {
+      autofocus: true,
       read: () => (type === "short" ? rows[0].input.value : rows.map(r => r.input.value)),
       ready: () => rows.some(r => r.input.value.trim()),
       lock(res) {
         rows.forEach(({ row, input }, n) => {
+          const ok = res.parts ? res.parts[n] : res.ok;
           input.readOnly = true;
-          row.classList.add((res.parts ? res.parts[n] : res.ok) ? "ok" : "no");
+          input.setAttribute("aria-invalid", String(!ok));
+          row.classList.add(ok ? "ok" : "no");
+          const fix = ok ? null
+            : type === "blanks" ? ` · 정답: ${q.blanks[n].accept[0]}`
+            : type === "list" ? " · 인정 답안에 없거나 앞 칸과 같은 답" : null;
+          row.append(el("span", { className: "status" }, mark(ok, ok ? "✓ 맞음" : "✗ 틀림"), fix));
         });
       },
     };
@@ -479,6 +559,18 @@ function explainBlock(q, title) {
   return parts;
 }
 
+// 채점 결과의 첫 줄이 하단 바에 가려 있으면, 결과가 최대한 보이도록 스크롤한다
+function revealFeedback() {
+  const box = $("explain").getBoundingClientRect();
+  const top = document.querySelector(".top");
+  const topEdge = getComputedStyle(top).position === "sticky" ? top.getBoundingClientRect().bottom : 0;
+  const barTop = document.querySelector(".bar").getBoundingClientRect().top;
+  if (box.top >= topEdge && box.top <= barTop - 96) return;
+  const room = barTop - topEdge - 24;
+  const want = Math.max(topEdge + 12, barTop - 12 - Math.min(box.height, room));
+  window.scrollBy({ top: box.top - want, behavior: smooth() });
+}
+
 // ── 연습 모드 ────────────────────────────
 // 코드 문항(lang)은 첫 줄을 지시문으로, 나머지(표·소스)를 고정폭으로 보여준다
 function header(q) {
@@ -490,31 +582,36 @@ function header(q) {
   $("qbody").textContent = cut > 0 ? q.q.slice(cut + 1).replace(/^\n+/, "") : "";
   $("qbody").classList.toggle("hide", cut <= 0);
   $("explain").className = "hide";
+  $("explain").replaceChildren();
   window.scrollTo({ top: 0 });
 }
+
+// 새 문제의 읽기 시작점: 입력칸이 있으면 입력칸(mount가 맡음), 아니면 문제 문장
+function focusQuestion() {
+  if (!view.autofocus) $("q").focus({ preventScroll: true });
+}
+
+const practiceScore = () => { $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`; };
 
 function render() {
   const q = deck[i];
   answered = false;
   $("bar").max = deck.length; $("bar").value = i;
   $("pos").textContent = `${i + 1} / ${deck.length}`;
-  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  practiceScore();
   header(q);
+  show("quiz", `${i + 1}/${deck.length} · ${pack.name} · ${APP}`);
 
-  const type = L.questionType(q);
-  if (type === "self") {
-    view = mount(q, $("answer"), undefined, {});
+  if (L.questionType(q) === "self") {
+    view = mount(q, $("answer"), undefined);
     setGo("정답 보기", revealSelf);
-    return;
+  } else {
+    view = mount(q, $("answer"), undefined, {
+      onChange: () => { if (!answered) $("go").disabled = !view.ready(); },
+    });
+    setGo("채점", submit, true);
   }
-  const instant = type === "choice";
-  view = mount(q, $("answer"), undefined, {
-    instant,
-    onSubmit: submit,
-    onChange: () => { if (!answered) $("go").disabled = !view.ready(); },
-  });
-  if (instant) setGo("답을 선택하세요", null, true);
-  else setGo("채점", submit, true);
+  focusQuestion();
 }
 
 function submit() {
@@ -528,19 +625,26 @@ function submit() {
   $("explain").className = res.ok ? "ok" : "no";
   $("explain").replaceChildren(...explainBlock(q, res.ok ? "정답" : "오답"));
   if (!res.ok && TEXT_TYPES.includes(L.questionType(q))) {
+    // 같은 뜻을 다르게 쓴 경우를 위한 수동 인정. 다시 누르면 취소된다.
+    let accepted = false;
     const btn = el("button", { className: "accept-btn", type: "button", textContent: "정답으로 인정" });
     btn.onclick = () => {
-      hit++; missed = missed.filter(m => m !== q);
-      record(q, true); saveWrong();
-      $("explain").className = "ok";
-      $("explain").firstChild.textContent = "정답 (직접 인정)";
-      btn.remove();
-      $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+      accepted = !accepted;
+      if (accepted) { hit++; missed = missed.filter(m => m !== q); } else { hit--; missed.push(q); }
+      record(q, accepted); saveWrong();
+      $("explain").className = accepted ? "ok" : "no";
+      $("explain").firstChild.textContent = accepted ? "정답 (직접 인정)" : "오답";
+      btn.textContent = accepted ? "인정 취소" : "정답으로 인정";
+      practiceScore();
+      announce(accepted ? "정답으로 인정했습니다" : "인정을 취소했습니다");
     };
     $("explain").append(btn);
   }
-  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  practiceScore();
   setGo(i + 1 < deck.length ? "다음 문제" : "결과 보기", next);
+  announce(`${res.ok ? "정답" : "오답"}. 정답은 ${L.answerText(q)}`);
+  $("go").focus({ preventScroll: true });
+  revealFeedback();
 }
 
 function revealSelf() {
@@ -550,7 +654,7 @@ function revealSelf() {
   const grade = el("div", { className: "self-grade" });
   const btns = [["맞음", true], ["틀림", false]].map(([text, ok], n) => {
     const b = el("button", { className: "choice", type: "button" },
-      el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }), el("span", { textContent: text }));
+      el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }), el("span", { className: "txt", textContent: text }));
     b.onclick = () => selfGrade(ok, b, btns);
     grade.append(b);
     return b;
@@ -558,6 +662,9 @@ function revealSelf() {
   view.keys = btns;
   $("explain").append(grade);
   setGo("스스로 채점하세요", null, true);
+  announce("모범답안을 보고 맞음 또는 틀림을 고르세요");
+  btns[0].focus({ preventScroll: true });
+  revealFeedback();
 }
 
 function selfGrade(ok, btn, btns) {
@@ -571,8 +678,9 @@ function selfGrade(ok, btn, btns) {
   record(q, ok); saveWrong();
   $("explain").className = ok ? "ok" : "no";
   $("explain").firstChild.textContent = ok ? "맞음 · 모범답안" : "틀림 · 모범답안";
-  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  practiceScore();
   setGo(i + 1 < deck.length ? "다음 문제" : "결과 보기", next);
+  $("go").focus({ preventScroll: true });
 }
 
 function next() {
@@ -589,7 +697,7 @@ function reviewItem(q, extra = []) {
 }
 
 function finish(msg) {
-  show("done");
+  show("done", `결과 · ${APP}`);
   $("unitBox").classList.add("hide");
   bar(...(wrong.size ? ["reset"] : []));
   if (msg) {
@@ -605,6 +713,7 @@ function finish(msg) {
     const ids = missed.map(q => q.id);
     if (ids.length) { bar("retryWrong", ...(wrong.size ? ["reset"] : [])); $("retryWrong").onclick = () => start(ids); }
   }
+  announce($("resultTitle").textContent);
   setGo("설정으로", toSetup);
 }
 
@@ -617,6 +726,7 @@ function startExam() {
   deadline = Date.now() + pack.exam.minutes * 60_000;
   show("quiz");
   $("timer").classList.remove("hide");
+  $("examNav").classList.remove("hide");
   ticker = setInterval(tick, 500);
   tick();
   $("quit").onclick = () => { if (confirm("모의고사를 그만두면 답안이 사라집니다.")) toSetup(); };
@@ -629,29 +739,43 @@ function stopTimer() { clearInterval(ticker); ticker = 0; }
 function tick() {
   const left = Math.max(0, deadline - Date.now());
   const s = Math.ceil(left / 1000);
-  $("timer").textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  $("timer").textContent = `남은 시간 ${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   $("timer").classList.toggle("warn", left < 5 * 60_000);
   if (left === 0 && mode === "exam" && ticker) { timedOut = true; submitExam(true); }
 }
 
 const isAnswered = (q, r) => L.responseText(q, r) !== "(미응답)";
 
+// 문항 번호 목록: 답한 문항은 채워진 칸, 현재 문항은 테두리. 누르면 그 문항으로 간다
+function renderExamNav() {
+  const done = paper.map((q, k) => isAnswered(q, responses[k]));
+  const left = done.filter(d => !d).length;
+  $("score").textContent = `응답 ${paper.length - left}/${paper.length}`;
+  $("examLeft").textContent = left ? `안 푼 문항 ${left}개 · 번호를 누르면 이동합니다` : "모든 문항에 답했습니다";
+  $("qnav").replaceChildren(...paper.map((q, k) => {
+    const b = el("button", { type: "button", className: done[k] ? "done" : "", textContent: k + 1 });
+    b.setAttribute("aria-label", `${k + 1}번 ${q.cat} ${done[k] ? "응답함" : "안 풂"}`);
+    if (k === i) b.setAttribute("aria-current", "step");
+    b.onclick = () => { i = k; renderExam(); };
+    return b;
+  }));
+}
+
 function renderExam() {
   const q = paper[i];
   $("bar").max = paper.length; $("bar").value = i;
-  $("pos").textContent = `${i + 1} / ${paper.length} · ${q.cat}`;
-  const updateCount = () => {
-    $("score").textContent = `응답 ${paper.filter((p, k) => isAnswered(p, responses[k])).length}/${paper.length} ·`;
-  };
+  $("pos").textContent = `${i + 1} / ${paper.length}`;
   header(q);
+  show("quiz", `모의고사 ${i + 1}/${paper.length} · ${APP}`);
   view = mount(q, $("answer"), responses[i], {
-    onChange: () => { responses[i] = view.read(); updateCount(); },
+    onChange: () => { responses[i] = view.read(); renderExamNav(); },
   });
-  updateCount();
+  renderExamNav();
   bar("quit", "prev");
   $("prev").disabled = i === 0;
   const last = i === paper.length - 1;
   setGo(last ? "제출" : "다음", () => { if (last) submitExam(false); else { i++; renderExam(); } });
+  focusQuestion();
 }
 
 function submitExam(auto) {
@@ -664,45 +788,63 @@ function submitExam(auto) {
   showExamResult();
 }
 
-function showExamResult() {
-  show("done");
+// 점수 요약만 다시 그린다. 틀린 문제 목록은 그대로 두어 읽던 위치와 포커스를 지킨다.
+function renderExamSummary() {
   const units = L.scoreExam(paper, results, pack.exam);
   const passed = units.filter(u => u.pass).length;
   $("resultTitle").textContent = `${units.length}개 능력단위 중 ${passed}개 Pass`;
   $("result").textContent = (timedOut ? "시간이 끝나 자동 제출했습니다. " : "") +
     `${paper.length}문제 중 ${results.filter(Boolean).length}문제 정답`;
-  $("unitBox").classList.remove("hide");
   $("units").replaceChildren(...units.map(u => el("tr", {},
     el("td", { textContent: u.unit }),
     el("td", { className: "num", textContent: `${u.correct}/${u.total}` }),
     el("td", { className: "num", textContent: `${u.score}점` }),
     el("td", { className: `num ${u.pass ? "pass" : "fail"}`, textContent: u.pass ? "Pass" : "Fail" }))));
+  bar(...(results.some(r => !r) ? ["retryWrong"] : []));
+}
+
+function showExamResult() {
+  show("done", `모의고사 결과 · ${APP}`);
+  $("examNav").classList.add("hide");
+  $("unitBox").classList.remove("hide");
   $("examNote").textContent = "실제 시험은 작업형 6개를 포함한 필수능력단위 10개 중 7개 이상 Pass면 합격입니다.";
+  renderExamSummary();
 
   const wrongIdx = paper.map((_, k) => k).filter(k => !results[k]);
   $("reviewBox").classList.toggle("hide", !wrongIdx.length);
   $("review").replaceChildren(...wrongIdx.map(k => {
     const q = paper[k];
-    const mine = el("div", { className: "muted", textContent: `내 답: ${L.responseText(q, responses[k])}` });
-    const extra = [mine];
+    const extra = [el("div", { className: "muted", textContent: `내 답: ${L.responseText(q, responses[k])}` })];
     if (TEXT_TYPES.includes(L.questionType(q)) && isAnswered(q, responses[k])) {
+      const status = el("span");
       const btn = el("button", { className: "accept-btn", type: "button", textContent: "정답으로 인정" });
-      btn.onclick = () => { results[k] = true; record(q, true); saveWrong(); showExamResult(); };
-      extra.push(btn);
+      btn.onclick = () => {
+        results[k] = !results[k];
+        record(q, results[k]); saveWrong();
+        btn.textContent = results[k] ? "인정 취소" : "정답으로 인정";
+        status.replaceChildren(results[k] ? mark(true, " ✓ 정답으로 인정함") : "");
+        renderExamSummary();
+        announce(`${results[k] ? "정답으로 인정했습니다" : "인정을 취소했습니다"}. ${$("resultTitle").textContent}`);
+      };
+      extra.push(el("div", {}, btn, status));
     }
     return reviewItem(q, extra);
   }));
-  const ids = wrongIdx.map(k => paper[k].id);
-  bar(...(ids.length ? ["retryWrong"] : []));
-  $("retryWrong").onclick = () => start(ids);
+  $("retryWrong").onclick = () => start(paper.filter((_, k) => !results[k]).map(q => q.id));
   setGo("설정으로", toSetup);
+  announce(`${$("resultTitle").textContent}. ${$("result").textContent}`);
 }
 
 // ── 키보드 ───────────────────────────────
+// Enter: 버튼·링크에 포커스가 있으면 그 컨트롤의 기본 동작을 따른다. 그 밖에서는 주 버튼.
+// 1–9: 보기 선택. 입력칸·선택칸 안에서는 둘 다 가로채지 않는다.
 document.addEventListener("keydown", e => {
-  if (e.target.matches("select, input, textarea") || e.isComposing) return;
-  if (e.key === "Enter" && !$("go").disabled && !$("quiz").classList.contains("hide") || e.key === "Enter" && !$("go").disabled && e.target === document.body) {
-    e.preventDefault(); $("go").click(); return;
+  if (e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.target.closest("input, select, textarea")) return;
+  if (e.key === "Enter") {
+    if (e.target.closest("button, a, summary")) return;
+    if (!$("go").disabled) { e.preventDefault(); $("go").click(); }
+    return;
   }
   if (/^[1-9]$/.test(e.key) && view?.keys && !$("quiz").classList.contains("hide")) {
     const b = view.keys[+e.key - 1];
@@ -710,7 +852,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
-$("pack").onchange = loadPack;
+$("pack").onchange = () => loadPack().catch(showLoadError);
 $("examStart").onclick = startExam;
 $("reset").onclick = () => {
   if (confirm(`'${pack.name}' 오답노트 ${wrong.size}문항을 모두 지웁니다. 되돌릴 수 없습니다.`)) {
@@ -719,13 +861,7 @@ $("reset").onclick = () => {
 };
 window.addEventListener("beforeunload", e => { if (mode === "exam" && ticker) e.preventDefault(); });
 
-boot().catch(e => {
-  document.querySelector(".wrap").replaceChildren(
-    el("h1", { textContent: "불러오지 못했습니다" }),
-    el("p", { className: "muted", textContent: String(e) }),
-    el("p", { textContent: "파일을 직접 열지 말고 서버로 실행하세요: python3 -m http.server 8000 → http://localhost:8000" }));
-  document.querySelector(".bar").remove();
-});
+boot().catch(showLoadError);
 </script>
 </body>
 </html>
