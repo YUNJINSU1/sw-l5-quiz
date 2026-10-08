@@ -45,7 +45,7 @@
       ],
       "a": 1,
       "e": "모듈화의 목표는 결합도 최소화, 응집도 최대화다.",
-      "src": "25V2 공개자료 p.2 진위형 문항2"
+      "src": "25V2 공개자료 p.2 진위형 문항2 · 정답 근거: IEEE Computer Society, SWEBOK Guide v4.0a (August 2026), Chapter 3 Software Design §1.4, p.3-4 (PDF p.86) — https://ieeecs-media.computer.org/media/education/swebok/swebok-v4.pdf"
     },
     {
       "type": "choice",
@@ -99,7 +99,7 @@
         1,
         2
       ],
-      "e": "콘텐츠 제공자, 콘텐츠 분배자, 보안 컨테이너는 DRM 저작권 관리 구성 요소다.",
+      "e": "콘텐츠 제공자, 콘텐츠 분배자, 보안 컨테이너는 DRM 저작권 관리 구성 요소다. 공개자료에 정답표가 없고 공인 1차 출처에서 이 분류를 확인하지 못했다. NCS 학습모듈 기반 교재의 분류를 따랐다.",
       "src": "25V2 공개자료 p.2 선다형 문항2"
     },
     {
@@ -118,7 +118,7 @@
         0,
         2
       ],
-      "e": "버전 관리 도구의 방식에는 공유 폴더, 클라이언트/서버, 분산 저장소 방식이 있다. 보기에는 두 방식만 제시됐다.",
+      "e": "버전 관리 도구의 방식에는 공유 폴더, 클라이언트/서버, 분산 저장소 방식이 있다. 보기에는 두 방식만 제시됐다. 공개자료에 정답표가 없고 공인 1차 출처에서 이 분류를 확인하지 못했다. NCS 학습모듈 기반 교재의 분류를 따랐다.",
       "src": "25V2 공개자료 p.2 선다형 문항3"
     },
     {
@@ -269,7 +269,7 @@
         "스트레스 테스트"
       ],
       "e": "한계를 넘는 부하를 가해 시스템의 안정성을 확인한다. 정상 범위의 부하에서 성능을 재는 부하(Load) 테스트와 구분한다.",
-      "src": "25V2 공개자료 p.4 완성형 문항3"
+      "src": "25V2 공개자료 p.4 완성형 문항3 · 정답 근거: IEEE SEVOCAB, stress testing (ISO/IEC/IEEE 29119-1:2022 §3.79, consulted 2026-10-08) — https://pascal.computer.org/sev_display/search.action?term=stress+testing&source= ; IEEE SWEBOK Guide v4.0a, Chapter 5 §2.2.7 p.5-9 (PDF p.125) — https://ieeecs-media.computer.org/media/education/swebok/swebok-v4.pdf"
     },
     {
       "type": "blanks",
@@ -324,7 +324,7 @@
         }
       ],
       "e": "회복 테스트는 장애 후 복구를, 성능 테스트는 응답시간·처리량·속도를 검증한다.",
-      "src": "25V2 공개자료 p.4 복수단답형 문항2"
+      "src": "25V2 공개자료 p.4 복수단답형 문항2 · 정답 근거: IEEE SWEBOK Guide v4.0a, Chapter 5 §2.2.7 Non-functional Testing p.5-8–5-9 (PDF p.124–125), Recovery Testing / Performance Testing — https://ieeecs-media.computer.org/media/education/swebok/swebok-v4.pdf ; IEEE SEVOCAB, performance testing (ISO/IEC/IEEE 29119-2:2021 §3.11, consulted 2026-10-08) — https://pascal.computer.org/sev_display/search.action?term=performance+testing&source="
     },
     {
       "type": "list",
