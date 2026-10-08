@@ -1,0 +1,274 @@
+{
+  "id": "l5-25v2-work",
+  "name": "SW개발 L5 25V2 작업형 연습",
+  "desc": "25V2 공개 작업형의 SQL·Java 디버깅·스토리보드 자기채점 연습. SQL은 Oracle/MySQL, Java는 JDK 8로 검증. JSP/Tomcat 실행 및 웹 화면 구현은 범위 밖이다. 추가 SQL은 동일 데이터 기반 창작 연습이다.",
+  "requireSource": true,
+  "source": {
+    "type": "official",
+    "label": "한국산업인력공단 Q-Net SW개발_L5_25V2 공개자료",
+    "url": "https://c.q-net.or.kr/cont/bbs/cmnWldsExpList.do",
+    "note": "2025-12-02 등재 · 표준화 작업형 문제"
+  },
+  "questions": [
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-1. 명세에 맞게 TBL_SHIPMENTS을 생성하시오. 명세에 없는 FK는 추가하지 마시오.\nshipment_id: Oracle NUMBER(10), MySQL BIGINT, NOT NULL PRIMARY KEY\norder_id: Oracle NUMBER(10), MySQL BIGINT, NULL 허용\ntracking_no: Oracle VARCHAR2(6), MySQL VARCHAR(6), NULL 허용\ncourier: Oracle VARCHAR2(30), MySQL VARCHAR(30), NULL 허용\nstatus: Oracle VARCHAR2(20), MySQL CHAR(20), NULL 허용\nshipped_dt: Oracle DATE, MySQL DATETIME, NULL 허용\ndelivered_dt: Oracle DATE, MySQL DATETIME, NULL 허용",
+      "answer": "-- [Oracle]\nCREATE TABLE TBL_SHIPMENTS (\n  shipment_id NUMBER(10) PRIMARY KEY,\n  order_id NUMBER(10),\n  tracking_no VARCHAR2(6),\n  courier VARCHAR2(30),\n  status VARCHAR2(20),\n  shipped_dt DATE,\n  delivered_dt DATE\n);\n\n-- [MySQL]\nCREATE TABLE TBL_SHIPMENTS (\n  shipment_id BIGINT PRIMARY KEY,\n  order_id BIGINT,\n  tracking_no VARCHAR(6),\n  courier VARCHAR(30),\n  status CHAR(20),\n  shipped_dt DATETIME,\n  delivered_dt DATETIME\n) DEFAULT CHARSET=utf8mb4;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nrow_count\n0",
+      "e": "PK는 NOT NULL을 포함한다. 명세의 자료형/길이를 그대로 사용한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-2. 명세에 맞게 TBL_SHIPITEMS을 생성하시오. 명세에 없는 FK는 추가하지 마시오.\nship_item_id: Oracle NUMBER(10), MySQL BIGINT, NOT NULL PRIMARY KEY\nshipment_id: Oracle NUMBER(10), MySQL BIGINT, NULL 허용\nproduct_id: Oracle NUMBER(10), MySQL BIGINT, NULL 허용\nproduct_name: Oracle VARCHAR2(30), MySQL VARCHAR(30), NULL 허용\nquantityl: Oracle NUMBER(2), MySQL INT, NULL 허용\nupdated_at: Oracle DATE, MySQL DATETIME, NULL 허용",
+      "answer": "-- [Oracle]\nCREATE TABLE TBL_SHIPITEMS (\n  ship_item_id NUMBER(10) PRIMARY KEY,\n  shipment_id NUMBER(10),\n  product_id NUMBER(10),\n  product_name VARCHAR2(30),\n  quantityl NUMBER(2),\n  updated_at DATE\n);\n\n-- [MySQL]\nCREATE TABLE TBL_SHIPITEMS (\n  ship_item_id BIGINT PRIMARY KEY,\n  shipment_id BIGINT,\n  product_id BIGINT,\n  product_name VARCHAR(30),\n  quantityl INT,\n  updated_at DATETIME\n) DEFAULT CHARSET=utf8mb4;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nrow_count\n0",
+      "e": "quantityl은 마지막 문자가 숫자 1이 아닌 영문 소문자 l인 공개 명세의 식별자다. 임의로 quantity로 고치지 않는다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-3. 명세에 맞게 TBL_DSH을 생성하시오. 명세에 없는 FK는 추가하지 마시오.\nhistory_id: Oracle NUMBER(10), MySQL BIGINT, NOT NULL PRIMARY KEY\nshipment_id: Oracle NUMBER(10), MySQL BIGINT, NULL 허용\nstatus: Oracle VARCHAR2(20), MySQL VARCHAR(20), NULL 허용\nremarks: Oracle VARCHAR2(50), MySQL VARCHAR(50), NULL 허용\nchange_date: Oracle DATE, MySQL DATETIME, NULL 허용",
+      "answer": "-- [Oracle]\nCREATE TABLE TBL_DSH (\n  history_id NUMBER(10) PRIMARY KEY,\n  shipment_id NUMBER(10),\n  status VARCHAR2(20),\n  remarks VARCHAR2(50),\n  change_date DATE\n);\n\n-- [MySQL]\nCREATE TABLE TBL_DSH (\n  history_id BIGINT PRIMARY KEY,\n  shipment_id BIGINT,\n  status VARCHAR(20),\n  remarks VARCHAR(50),\n  change_date DATETIME\n) DEFAULT CHARSET=utf8mb4;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nrow_count\n0",
+      "e": "PK는 NOT NULL을 포함한다. 명세의 자료형/길이를 그대로 사용한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-4. 다음 샘플을 INSERT하고 COMMIT하시오.\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL",
+      "answer": "-- [Oracle]\nINSERT INTO TBL_SHIPMENTS VALUES (1, 1001, 'TRK001', 'CJ대한통운', '배송준비', TO_DATE('2025-08-01 09:15:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (2, 1002, 'TRK002', '로젠택배', '배송중', TO_DATE('2025-08-02 10:05:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (3, 1003, 'TRK003', '한진택배', '배송완료', TO_DATE('2025-08-01 08:30:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2025-08-03 14:10:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPMENTS VALUES (4, 1004, 'TRK004', '롯데택배', '배송중', TO_DATE('2025-08-05 16:20:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (5, 1005, 'TRK005', 'CJ대한통운', '배송완료', TO_DATE('2025-08-02 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2025-08-04 11:00:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPMENTS VALUES (6, 1006, 'TRK006', '우체국택배', '배송준비', NULL, NULL);\nCOMMIT;\n\n-- [MySQL]\nINSERT INTO TBL_SHIPMENTS VALUES (1, 1001, 'TRK001', 'CJ대한통운', '배송준비', '2025-08-01 09:15:00', NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (2, 1002, 'TRK002', '로젠택배', '배송중', '2025-08-02 10:05:00', NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (3, 1003, 'TRK003', '한진택배', '배송완료', '2025-08-01 08:30:00', '2025-08-03 14:10:00');\nINSERT INTO TBL_SHIPMENTS VALUES (4, 1004, 'TRK004', '롯데택배', '배송중', '2025-08-05 16:20:00', NULL);\nINSERT INTO TBL_SHIPMENTS VALUES (5, 1005, 'TRK005', 'CJ대한통운', '배송완료', '2025-08-02 11:00:00', '2025-08-04 11:00:00');\nINSERT INTO TBL_SHIPMENTS VALUES (6, 1006, 'TRK006', '우체국택배', '배송준비', NULL, NULL);\nCOMMIT;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL",
+      "e": "Oracle DATE는 TO_DATE로 입력한다. NULL은 문자열이 아니다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-5. 다음 샘플을 INSERT하고 COMMIT하시오.\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00",
+      "answer": "-- [Oracle]\nINSERT INTO TBL_SHIPITEMS VALUES (1, 1, 501, '무선 마우스', 2, TO_DATE('2025-08-01 09:20:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (2, 1, 502, '키보드', 1, TO_DATE('2025-08-01 09:25:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (3, 2, 503, '노트북 파우치', 3, TO_DATE('2025-08-02 10:15:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (4, 3, 504, 'HDMI 케이블', 1, TO_DATE('2025-08-01 08:45:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (5, 3, 505, 'USB 허브', 2, TO_DATE('2025-08-01 09:00:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (6, 4, 506, '게이밍 헤드셋', 5, TO_DATE('2025-08-05 16:30:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_SHIPITEMS VALUES (7, 2, 503, '노트북 파우치', 1, TO_DATE('2025-08-02 12:30:00', 'YYYY-MM-DD HH24:MI:SS'));\nCOMMIT;\n\n-- [MySQL]\nINSERT INTO TBL_SHIPITEMS VALUES (1, 1, 501, '무선 마우스', 2, '2025-08-01 09:20:00');\nINSERT INTO TBL_SHIPITEMS VALUES (2, 1, 502, '키보드', 1, '2025-08-01 09:25:00');\nINSERT INTO TBL_SHIPITEMS VALUES (3, 2, 503, '노트북 파우치', 3, '2025-08-02 10:15:00');\nINSERT INTO TBL_SHIPITEMS VALUES (4, 3, 504, 'HDMI 케이블', 1, '2025-08-01 08:45:00');\nINSERT INTO TBL_SHIPITEMS VALUES (5, 3, 505, 'USB 허브', 2, '2025-08-01 09:00:00');\nINSERT INTO TBL_SHIPITEMS VALUES (6, 4, 506, '게이밍 헤드셋', 5, '2025-08-05 16:30:00');\nINSERT INTO TBL_SHIPITEMS VALUES (7, 2, 503, '노트북 파우치', 1, '2025-08-02 12:30:00');\nCOMMIT;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00",
+      "e": "Oracle DATE는 TO_DATE로 입력한다. NULL은 문자열이 아니다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "①-6. 다음 샘플을 INSERT하고 COMMIT하시오.\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nINSERT INTO TBL_DSH VALUES (1, 1, '출고준비', '상품 포장이력', TO_DATE('2025-08-01 08:30:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_DSH VALUES (2, 1, '출고완료', '택배사 인계', TO_DATE('2025-08-01 09:00:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_DSH VALUES (3, 2, '배송중', '서울 물류센터 도착', TO_DATE('2025-08-02 14:20:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_DSH VALUES (4, 2, '배송중', '배송 차량 출발', TO_DATE('2025-08-02 16:45:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_DSH VALUES (5, 3, '배송중', '인천 허브센터 도착', TO_DATE('2025-08-03 10:10:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_DSH VALUES (6, 3, '배송완료', '수취인 전달 완료', TO_DATE('2025-08-03 12:00:00', 'YYYY-MM-DD HH24:MI:SS'));\nCOMMIT;\n\n-- [MySQL]\nINSERT INTO TBL_DSH VALUES (1, 1, '출고준비', '상품 포장이력', '2025-08-01 08:30:00');\nINSERT INTO TBL_DSH VALUES (2, 1, '출고완료', '택배사 인계', '2025-08-01 09:00:00');\nINSERT INTO TBL_DSH VALUES (3, 2, '배송중', '서울 물류센터 도착', '2025-08-02 14:20:00');\nINSERT INTO TBL_DSH VALUES (4, 2, '배송중', '배송 차량 출발', '2025-08-02 16:45:00');\nINSERT INTO TBL_DSH VALUES (5, 3, '배송중', '인천 허브센터 도착', '2025-08-03 10:10:00');\nINSERT INTO TBL_DSH VALUES (6, 3, '배송완료', '수취인 전달 완료', '2025-08-03 12:00:00');\nCOMMIT;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "e": "Oracle DATE는 TO_DATE로 입력한다. NULL은 문자열이 아니다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8, 9"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "②-1. 배송ID, 배송회사, 제품명, 수량을 물품ID 1~7 순으로 출력하시오(p.10 그림1).\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.shipment_id AS \"배송ID\", s.courier AS \"배송회사\", i.product_name AS \"제품명\", i.quantityl AS \"수량\" FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id ORDER BY i.ship_item_id;\n\n-- [MySQL]\nSELECT s.shipment_id AS \"배송ID\", s.courier AS \"배송회사\", i.product_name AS \"제품명\", i.quantityl AS \"수량\" FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id ORDER BY i.ship_item_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\n배송ID|배송회사|제품명|수량\n1|CJ대한통운|무선 마우스|2\n1|CJ대한통운|키보드|1\n2|로젠택배|노트북 파우치|3\n3|한진택배|HDMI 케이블|1\n3|한진택배|USB 허브|2\n4|롯데택배|게이밍 헤드셋|5\n2|로젠택배|노트북 파우치|1",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.10"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "②-2. 배송ID, 상태, 변경일시를 이력ID 순으로 출력하시오. 날짜 형식은 YYYY-MM-DD HH24:MI:SS이다(p.10 그림2).\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT shipment_id AS \"배송ID\", status AS \"상태\", TO_CHAR(change_date, 'YYYY-MM-DD HH24:MI:SS') AS \"변경일시\" FROM TBL_DSH ORDER BY history_id;\n\n-- [MySQL]\nSELECT shipment_id AS \"배송ID\", status AS \"상태\", DATE_FORMAT(change_date, '%Y-%m-%d %H:%i:%s') AS \"변경일시\" FROM TBL_DSH ORDER BY history_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\n배송ID|상태|변경일시\n1|출고준비|2025-08-01 08:30:00\n1|출고완료|2025-08-01 09:00:00\n2|배송중|2025-08-02 14:20:00\n2|배송중|2025-08-02 16:45:00\n3|배송중|2025-08-03 10:10:00\n3|배송완료|2025-08-03 12:00:00",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.10"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "②-3. 배송중인 제품을 배송ID/송장번호/상태/제품명별로 묶어 총 수량 내림차순으로 출력하시오(p.10 그림3).\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.shipment_id AS \"배송ID\", s.tracking_no AS \"송장번호\", s.status AS \"상태\", i.product_name AS \"제품명\", SUM(i.quantityl) AS \"총 수량\" FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id WHERE s.status='배송중' GROUP BY s.shipment_id, s.tracking_no, s.status, i.product_name ORDER BY SUM(i.quantityl) DESC, s.shipment_id;\n\n-- [MySQL]\nSELECT s.shipment_id AS \"배송ID\", s.tracking_no AS \"송장번호\", s.status AS \"상태\", i.product_name AS \"제품명\", SUM(i.quantityl) AS \"총 수량\" FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id WHERE s.status='배송중' GROUP BY s.shipment_id, s.tracking_no, s.status, i.product_name ORDER BY SUM(i.quantityl) DESC, s.shipment_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\n배송ID|송장번호|상태|제품명|총 수량\n4|TRK004|배송중|게이밍 헤드셋|5\n2|TRK002|배송중|노트북 파우치|4",
+      "e": "공개 문구는 건수이나 그림3의 5와 4는 COUNT가 아닌 SUM(quantityl)이다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.10"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 1. JOIN: 배송준비인 배송의 품목을 물품ID 순으로 출력하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.tracking_no, i.product_name, i.quantityl FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id WHERE s.status='배송준비' ORDER BY i.ship_item_id;\n\n-- [MySQL]\nSELECT s.tracking_no, i.product_name, i.quantityl FROM TBL_SHIPITEMS i JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id WHERE s.status='배송준비' ORDER BY i.ship_item_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\ntracking_no|product_name|quantityl\nTRK001|무선 마우스|2\nTRK001|키보드|1",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 2. LEFT JOIN: 시작일이 NULL인 배송도 보존하여 품목명/수량을 출력하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.shipment_id, i.product_name, i.quantityl FROM TBL_SHIPMENTS s LEFT JOIN TBL_SHIPITEMS i ON s.shipment_id=i.shipment_id WHERE s.shipped_dt IS NULL ORDER BY s.shipment_id, i.ship_item_id;\n\n-- [MySQL]\nSELECT s.shipment_id, i.product_name, i.quantityl FROM TBL_SHIPMENTS s LEFT JOIN TBL_SHIPITEMS i ON s.shipment_id=i.shipment_id WHERE s.shipped_dt IS NULL ORDER BY s.shipment_id, i.ship_item_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|product_name|quantityl\n6|NULL|NULL",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 3. GROUP BY/HAVING: 수량 합계가 4 이상인 배송을 배송ID 순으로 출력하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT shipment_id, SUM(quantityl) AS total_quantity FROM TBL_SHIPITEMS GROUP BY shipment_id HAVING SUM(quantityl)>=4 ORDER BY shipment_id;\n\n-- [MySQL]\nSELECT shipment_id, SUM(quantityl) AS total_quantity FROM TBL_SHIPITEMS GROUP BY shipment_id HAVING SUM(quantityl)>=4 ORDER BY shipment_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|total_quantity\n2|4\n4|5",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 4. ORDER BY: 수량 내림차순, 동률이면 물품ID 오름차순 정렬하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT ship_item_id, product_name, quantityl FROM TBL_SHIPITEMS ORDER BY quantityl DESC, ship_item_id;\n\n-- [MySQL]\nSELECT ship_item_id, product_name, quantityl FROM TBL_SHIPITEMS ORDER BY quantityl DESC, ship_item_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nship_item_id|product_name|quantityl\n6|게이밍 헤드셋|5\n3|노트북 파우치|3\n1|무선 마우스|2\n5|USB 허브|2\n2|키보드|1\n4|HDMI 케이블|1\n7|노트북 파우치|1",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 5. COUNT: 모든 배송사별 배송 건수를 첫 배송ID 순으로 출력하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT courier, COUNT(*) AS shipment_count FROM TBL_SHIPMENTS GROUP BY courier ORDER BY MIN(shipment_id);\n\n-- [MySQL]\nSELECT courier, COUNT(*) AS shipment_count FROM TBL_SHIPMENTS GROUP BY courier ORDER BY MIN(shipment_id);\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\ncourier|shipment_count\nCJ대한통운|2\n로젠택배|1\n한진택배|1\n롯데택배|1\n우체국택배|1",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 6. LEFT JOIN/COUNT: 품목 없는 배송도 포함해 배송별 품목 행 수를 조회하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.shipment_id, COUNT(i.ship_item_id) AS item_count FROM TBL_SHIPMENTS s LEFT JOIN TBL_SHIPITEMS i ON s.shipment_id=i.shipment_id GROUP BY s.shipment_id ORDER BY s.shipment_id;\n\n-- [MySQL]\nSELECT s.shipment_id, COUNT(i.ship_item_id) AS item_count FROM TBL_SHIPMENTS s LEFT JOIN TBL_SHIPITEMS i ON s.shipment_id=i.shipment_id GROUP BY s.shipment_id ORDER BY s.shipment_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|item_count\n1|2\n2|2\n3|2\n4|1\n5|0\n6|0",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 7. 도착일이 있는 배송의 시작/도착일을 지정 형식으로 출력하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT shipment_id, TO_CHAR(shipped_dt, 'YYYY-MM-DD HH24:MI:SS') AS shipped_dt, TO_CHAR(delivered_dt, 'YYYY-MM-DD HH24:MI:SS') AS delivered_dt FROM TBL_SHIPMENTS WHERE delivered_dt IS NOT NULL ORDER BY shipment_id;\n\n-- [MySQL]\nSELECT shipment_id, DATE_FORMAT(shipped_dt, '%Y-%m-%d %H:%i:%s') AS shipped_dt, DATE_FORMAT(delivered_dt, '%Y-%m-%d %H:%i:%s') AS delivered_dt FROM TBL_SHIPMENTS WHERE delivered_dt IS NOT NULL ORDER BY shipment_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|shipped_dt|delivered_dt\n3|2025-08-01 08:30:00|2025-08-03 14:10:00\n5|2025-08-02 11:00:00|2025-08-04 11:00:00",
+      "e": "ORDER BY로 결과 순서를 보장한다. 날짜는 명시적으로 변환하며 각 문항은 제시한 초기 데이터에서 실행한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 8. 배송ID=6이고 시작일이 NULL인 배송만 상태를 배송중으로 UPDATE하시오. 상태 확인 후 ROLLBACK하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nUPDATE TBL_SHIPMENTS SET status='배송중' WHERE shipment_id=6 AND shipped_dt IS NULL;\nSELECT shipment_id, status FROM TBL_SHIPMENTS WHERE shipment_id=6;\nROLLBACK;\n\n-- [MySQL]\nUPDATE TBL_SHIPMENTS SET status='배송중' WHERE shipment_id=6 AND shipped_dt IS NULL;\nSELECT shipment_id, status FROM TBL_SHIPMENTS WHERE shipment_id=6;\nROLLBACK;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nshipment_id|status\n6|배송중",
+      "e": "조건은 AND로 연결한다. 확인 조회 후 ROLLBACK하여 다음 연습에 영향을 주지 않는다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.7-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제1과제 데이터베이스 구현",
+      "q": "추가 SQL 9. 배송ID=2이고 quantityl=1인 품목만 DELETE하시오. 남은 품목 확인 후 ROLLBACK하시오.\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nDELETE FROM TBL_SHIPITEMS WHERE shipment_id=2 AND quantityl=1;\nSELECT ship_item_id, shipment_id, quantityl FROM TBL_SHIPITEMS WHERE shipment_id=2 ORDER BY ship_item_id;\nROLLBACK;\n\n-- [MySQL]\nDELETE FROM TBL_SHIPITEMS WHERE shipment_id=2 AND quantityl=1;\nSELECT ship_item_id, shipment_id, quantityl FROM TBL_SHIPITEMS WHERE shipment_id=2 ORDER BY ship_item_id;\nROLLBACK;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nship_item_id|shipment_id|quantityl\n3|2|3",
+      "e": "조건은 AND로 연결한다. 조회 후 ROLLBACK한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8-10 · 같은 데이터 기반 추가 연습(공식 출제 문항 아님)"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제3과제 서버프로그램 구현",
+      "q": "⑤-1. TBL_PRODUCT를 다음 명세대로 생성하시오.\nproduct_id: Oracle VARCHAR2(6), MySQL VARCHAR(6), NOT NULL PRIMARY KEY\nname: Oracle VARCHAR2(20), MySQL VARCHAR(20), NULL 허용\nprice: Oracle NUMBER(10,2), MySQL DECIMAL(10,2), NULL 허용\nweight: Oracle NUMBER(10,2), MySQL DECIMAL(10,2), NULL 허용\nreceived_at: Oracle DATE, MySQL DATETIME, NULL 허용",
+      "answer": "-- [Oracle]\nCREATE TABLE TBL_PRODUCT (\n  product_id VARCHAR2(6) PRIMARY KEY,\n  name VARCHAR2(20),\n  price NUMBER(10,2),\n  weight NUMBER(10,2),\n  received_at DATE\n);\n\n-- [MySQL]\nCREATE TABLE TBL_PRODUCT (\n  product_id VARCHAR(6) PRIMARY KEY,\n  name VARCHAR(20),\n  price DECIMAL(10,2),\n  weight DECIMAL(10,2),\n  received_at DATETIME\n) DEFAULT CHARSET=utf8mb4;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nrow_count\n0",
+      "e": "price의 컬럼명 설명은 원문에 회원명으로 오기되어 있으나 자료형과 표8 값은 가격이다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.17"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제3과제 서버프로그램 구현",
+      "q": "⑤-1. 제품 샘플 데이터를 등록하시오.\nTBL_PRODUCT\nproduct_id|name|price|weight|received_at\n501|무선 마우스|25000|0.2|2025-07-20 10:30:00\n502|키보드|75000|1.2|2025-07-18 09:00:00\n503|노트북 파우치|320000|5.5|2025-07-22 14:15:00\n504|HDMI 케이블|8000|0.1|2025-07-25 11:45:00\n505|USB 허브|30000|0.4|2025-07-21 16:20:00\n506|게이밍 헤드|35000|0.6|2025-07-23 14:15:00",
+      "answer": "-- [Oracle]\nINSERT INTO TBL_PRODUCT VALUES ('501', '무선 마우스', 25000, 0.2, TO_DATE('2025-07-20 10:30:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_PRODUCT VALUES ('502', '키보드', 75000, 1.2, TO_DATE('2025-07-18 09:00:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_PRODUCT VALUES ('503', '노트북 파우치', 320000, 5.5, TO_DATE('2025-07-22 14:15:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_PRODUCT VALUES ('504', 'HDMI 케이블', 8000, 0.1, TO_DATE('2025-07-25 11:45:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_PRODUCT VALUES ('505', 'USB 허브', 30000, 0.4, TO_DATE('2025-07-21 16:20:00', 'YYYY-MM-DD HH24:MI:SS'));\nINSERT INTO TBL_PRODUCT VALUES ('506', '게이밍 헤드', 35000, 0.6, TO_DATE('2025-07-23 14:15:00', 'YYYY-MM-DD HH24:MI:SS'));\nCOMMIT;\n\n-- [MySQL]\nINSERT INTO TBL_PRODUCT VALUES ('501', '무선 마우스', 25000, 0.2, '2025-07-20 10:30:00');\nINSERT INTO TBL_PRODUCT VALUES ('502', '키보드', 75000, 1.2, '2025-07-18 09:00:00');\nINSERT INTO TBL_PRODUCT VALUES ('503', '노트북 파우치', 320000, 5.5, '2025-07-22 14:15:00');\nINSERT INTO TBL_PRODUCT VALUES ('504', 'HDMI 케이블', 8000, 0.1, '2025-07-25 11:45:00');\nINSERT INTO TBL_PRODUCT VALUES ('505', 'USB 허브', 30000, 0.4, '2025-07-21 16:20:00');\nINSERT INTO TBL_PRODUCT VALUES ('506', '게이밍 헤드', 35000, 0.6, '2025-07-23 14:15:00');\nCOMMIT;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nproduct_id|name|price|weight|received_at\n501|무선 마우스|25000.00|0.20|2025-07-20 10:30:00\n502|키보드|75000.00|1.20|2025-07-18 09:00:00\n503|노트북 파우치|320000.00|5.50|2025-07-22 14:15:00\n504|HDMI 케이블|8000.00|0.10|2025-07-25 11:45:00\n505|USB 허브|30000.00|0.40|2025-07-21 16:20:00\n506|게이밍 헤드|35000.00|0.60|2025-07-23 14:15:00",
+      "e": "제품506의 표8 이름은 게이밍 헤드다. 품목 테이블의 게이밍 헤드셋과 다르므로 임의로 통일하지 않는다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.17"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제3과제 서버프로그램 구현",
+      "q": "⑤-1. db_insert.jsp의 빈 SQL 문자열을 ? 다섯 개로 채우시오. 바인딩 순서는 productid, name, price, weight, received_date이다. received_date는 HTML datetime-local의 2025-07-24T12:00 값을 Timestamp.valueOf(received_date.replace('T', ' ') + \":00\")으로 변환한다. JDBC에서 507 / 연습 제품 / 12000.00 / 0.75 / 2025-07-24 12:00:00을 바인딩하고 조회한 뒤 롤백한다고 가정하시오.\nTBL_PRODUCT: product_id VARCHAR(6) PK, name VARCHAR(20), price DECIMAL(10,2), weight DECIMAL(10,2), received_at DATETIME (Oracle은 VARCHAR2/NUMBER/DATE).",
+      "answer": "-- [Oracle]\nINSERT INTO TBL_PRODUCT (product_id, name, price, weight, received_at) VALUES (?, ?, ?, ?, ?);\n\n-- [MySQL]\nINSERT INTO TBL_PRODUCT (product_id, name, price, weight, received_at) VALUES (?, ?, ?, ?, ?);\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\nproduct_id|name|price|weight|received_at\n507|연습 제품|12000.00|0.75|2025-07-24 12:00:00",
+      "e": "ps.setString(1, productid), ps.setString(2, name), ps.setBigDecimal(3, new BigDecimal(price)), ps.setBigDecimal(4, new BigDecimal(weight)), ps.setTimestamp(5, Timestamp.valueOf(...)) 순서다. 원문은 name 등 매개변수 선언과 바인딩이 빠져 있다. 예제 SQL은 JDBC 템플릿이므로 검증기는 DB의 바인드 실행 기능으로 실제 실행한다. JSP/Tomcat은 실행하지 않는다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.20, 22"
+    },
+    {
+      "type": "self",
+      "lang": "sql",
+      "kind": "작업형",
+      "cat": "제3과제 서버프로그램 구현",
+      "q": "⑤-2·⑤-3. TBL_PRODUCT/TBL_SHIPITEMS/TBL_SHIPMENTS를 JOIN하여 추적번호, 제품명, 가격, 수량, 합계, 배송상태를 물품ID 순으로 출력하시오. 가격과 합계는 천 단위 쉼표를 붙인다. 공식 그림7과 샘플 데이터가 다른 부분도 설명하시오.\nTBL_PRODUCT\nproduct_id|name|price|weight|received_at\n501|무선 마우스|25000|0.2|2025-07-20 10:30:00\n502|키보드|75000|1.2|2025-07-18 09:00:00\n503|노트북 파우치|320000|5.5|2025-07-22 14:15:00\n504|HDMI 케이블|8000|0.1|2025-07-25 11:45:00\n505|USB 허브|30000|0.4|2025-07-21 16:20:00\n506|게이밍 헤드|35000|0.6|2025-07-23 14:15:00\n초기 데이터(각 문항은 이 상태에서 실행):\nTBL_SHIPMENTS\nshipment_id|order_id|tracking_no|courier|status|shipped_dt|delivered_dt\n1|1001|TRK001|CJ대한통운|배송준비|2025-08-01 09:15:00|NULL\n2|1002|TRK002|로젠택배|배송중|2025-08-02 10:05:00|NULL\n3|1003|TRK003|한진택배|배송완료|2025-08-01 08:30:00|2025-08-03 14:10:00\n4|1004|TRK004|롯데택배|배송중|2025-08-05 16:20:00|NULL\n5|1005|TRK005|CJ대한통운|배송완료|2025-08-02 11:00:00|2025-08-04 11:00:00\n6|1006|TRK006|우체국택배|배송준비|NULL|NULL\nTBL_SHIPITEMS\nship_item_id|shipment_id|product_id|product_name|quantityl|updated_at\n1|1|501|무선 마우스|2|2025-08-01 09:20:00\n2|1|502|키보드|1|2025-08-01 09:25:00\n3|2|503|노트북 파우치|3|2025-08-02 10:15:00\n4|3|504|HDMI 케이블|1|2025-08-01 08:45:00\n5|3|505|USB 허브|2|2025-08-01 09:00:00\n6|4|506|게이밍 헤드셋|5|2025-08-05 16:30:00\n7|2|503|노트북 파우치|1|2025-08-02 12:30:00\nTBL_DSH\nhistory_id|shipment_id|status|remarks|change_date\n1|1|출고준비|상품 포장이력|2025-08-01 08:30:00\n2|1|출고완료|택배사 인계|2025-08-01 09:00:00\n3|2|배송중|서울 물류센터 도착|2025-08-02 14:20:00\n4|2|배송중|배송 차량 출발|2025-08-02 16:45:00\n5|3|배송중|인천 허브센터 도착|2025-08-03 10:10:00\n6|3|배송완료|수취인 전달 완료|2025-08-03 12:00:00",
+      "answer": "-- [Oracle]\nSELECT s.tracking_no AS \"추적번호\", p.name AS \"제품명\", TO_CHAR(p.price, 'FM999,999,999,990') AS \"가격\", i.quantityl AS \"수량\", TO_CHAR(p.price*i.quantityl, 'FM999,999,999,990') AS \"합계\", s.status AS \"배송상태\" FROM TBL_PRODUCT p JOIN TBL_SHIPITEMS i ON p.product_id=CAST(i.product_id AS VARCHAR2(6)) JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id ORDER BY i.ship_item_id;\n\n-- [MySQL]\nSELECT s.tracking_no AS \"추적번호\", p.name AS \"제품명\", FORMAT(p.price, 0, 'en_US') AS \"가격\", i.quantityl AS \"수량\", FORMAT(p.price*i.quantityl, 0, 'en_US') AS \"합계\", s.status AS \"배송상태\" FROM TBL_PRODUCT p JOIN TBL_SHIPITEMS i ON p.product_id=CAST(i.product_id AS CHAR) JOIN TBL_SHIPMENTS s ON s.shipment_id=i.shipment_id ORDER BY i.ship_item_id;\n\n-- 예상 결과 (열 구분: |, NULL은 NULL)\n추적번호|제품명|가격|수량|합계|배송상태\nTRK001|무선 마우스|25,000|2|50,000|배송준비\nTRK001|키보드|75,000|1|75,000|배송준비\nTRK002|노트북 파우치|320,000|3|960,000|배송중\nTRK003|HDMI 케이블|8,000|1|8,000|배송완료\nTRK003|USB 허브|30,000|2|60,000|배송완료\nTRK004|게이밍 헤드|35,000|5|175,000|배송중\nTRK002|노트북 파우치|320,000|1|320,000|배송중",
+      "e": "공식 그림 7에는 7번 품목(TRK002 노트북 파우치 1개) 행이 빠져 있다. 표 4 샘플 데이터대로면 7행이 나온다. 문제에 없는 필터를 추가하지 않는다. 제품명은 TBL_PRODUCT.name에서 가져오므로 506은 게이밍 헤드이다. 합계는 가격×수량이며 천 단위 쉼표는 Oracle TO_CHAR/MySQL FORMAT 또는 JSP 표시 단계에서 처리할 수 있다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.8, 17-18"
+    },
+    {
+      "type": "self",
+      "lang": "java",
+      "kind": "작업형",
+      "cat": "제2과제 인터페이스 구현",
+      "q": "③·④. AuthorInfo의 누락 import/package를 보완하고 컴파일하여 객체 생성 시 지정 콘솔 문장을 출력하시오.\n\n공개 원문 소스:\npublic class AuthorInfo {\n  private String name;\n  private String bibun;\n  private String date;\n  private Date time;\n  public Date getTime() {\nreturn time;\n  }\n  public String getName() {\nreturn name;\n  }\n  public String getBibun() {\nreturn bibun;\n  }\n  public String getDate() {\nreturn date;\n  }\n  public AuthorInfo(){\n        Calendar cal = new GregorianCalendar();\ntime = cal.getTime();\nthis.name = \"홍길동\";  \n//자신의 성명 입력\nthis.bibun = \"1234\";    \n//자신의 비번 입력\nthis.date = \"2025-8-17\";      //평가 일자 입력\nSystem.out.println(\"성명: \"+this.name+\"   비번: \"+this.bibun+   \n        \" 작업일자: \"+this.date);      //이 문장은 반드시 포함하시오.\n  } \n}\n\n실행 드라이버:\npublic class Driver { public static void main(String[] args) { new AuthorPkg.AuthorInfo(); } }",
+      "answer": "package AuthorPkg;\nimport java.util.Date;\nimport java.util.Calendar;\nimport java.util.GregorianCalendar;\n\npublic class AuthorInfo {\n  private String name;\n  private String bibun;\n  private String date;\n  private Date time;\n  public Date getTime() {\nreturn time;\n  }\n  public String getName() {\nreturn name;\n  }\n  public String getBibun() {\nreturn bibun;\n  }\n  public String getDate() {\nreturn date;\n  }\n  public AuthorInfo(){\n        Calendar cal = new GregorianCalendar();\ntime = cal.getTime();\nthis.name = \"홍길동\";  \n//자신의 성명 입력\nthis.bibun = \"1234\";    \n//자신의 비번 입력\nthis.date = \"2025-8-17\";      //평가 일자 입력\nSystem.out.println(\"성명: \"+this.name+\"   비번: \"+this.bibun+   \n        \" 작업일자: \"+this.date);      //이 문장은 반드시 포함하시오.\n  } \n}\n\n수정 사항:\nAuthorPkg 패키지를 선언하고 Date/Calendar/GregorianCalendar를 java.util에서 import한다. 생성자는 필수 콘솔 문장을 그대로 유지한다. main은 별도 Driver에 둔다. getTime()은 실행 시각이므로 예상 출력에 고정 시각을 추가하지 않는다.\n\n예상 콘솔 출력:\n성명: 홍길동   비번: 1234 작업일자: 2025-8-17",
+      "e": "Date, Calendar, GregorianCalendar는 java.util 클래스이므로 import가 필요하다. 패키지 선언은 소스 저장 경로 및 호출 코드와 일치시킨다. 필수 콘솔 문장은 생성자 호출 시 출력되며 getTime()은 실행 시각이므로 고정값으로 바꾸지 않는다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.13-14"
+    },
+    {
+      "type": "self",
+      "lang": "java",
+      "kind": "작업형",
+      "cat": "제2과제 인터페이스 구현",
+      "q": "④. ErrorSearch의 세미콜론/import/package 컴파일 오류만 수정하시오. equals(null), catch, finally는 그대로 두고 등록/미등록/null 키의 실제 흐름과 출력을 설명하시오.\n\n공개 원문 소스:\npublic class ErrorSearch {\n   private String error_code\n   private String error_cause\n   public String getError_code() {\nreturn error_code\n   }\n   public void setError_code(String error_code) {\nthis.error_code = error_code\n   }\n   public String getError_cause() {\nreturn error_cause\n   }\n   public String errorCheck(){\n//아래 문장은 반드시 포함하시오.\n        System.out.println(\"** ErrorSearch.java 실행 **\");\n        error_cause = null\nHashMap<String, String> errorTable = new HashMap<String, String>();\nerrorTable.put(\"ABC001\", \"010-1111-1111\");\nerrorTable.put(\"ABC002\", \"010-1111-2222\");\nerrorTable.put(\"ABC003\", \"010-1111-3333\");\nerror_cause = errorTable.get(error_code);\ntry{ \nif (error_cause.equals(null)) {\nerror_cause = \"등록되지 않은 회원입니다!!\"\nreturn error_cause\n}\n} catch (java.lang.NullPointerException e){\nerror_cause = \"등록되지 않은 오류!!\"\nreturn error_cause\n}\nfinally{\nreturn error_cause\n}\n   }\n}\n\n실행 드라이버:\npublic class Driver { public static void main(String[] args) {\n  ErrorPkg.ErrorSearch e = new ErrorPkg.ErrorSearch();\n  for (String code : new String[] {\"ABC001\", \"ABC002\", \"ABC003\", \"UNKNOWN\", null}) {\n    e.setError_code(code); System.out.println(e.errorCheck());\n  }\n} }",
+      "answer": "package ErrorPkg;\nimport java.util.HashMap;\n\npublic class ErrorSearch {\n   private String error_code;\n   private String error_cause;\n   public String getError_code() {\nreturn error_code;\n   }\n   public void setError_code(String error_code) {\nthis.error_code = error_code;\n   }\n   public String getError_cause() {\nreturn error_cause;\n   }\n   public String errorCheck(){\n//아래 문장은 반드시 포함하시오.\n        System.out.println(\"** ErrorSearch.java 실행 **\");\n        error_cause = null;\nHashMap<String, String> errorTable = new HashMap<String, String>();\nerrorTable.put(\"ABC001\", \"010-1111-1111\");\nerrorTable.put(\"ABC002\", \"010-1111-2222\");\nerrorTable.put(\"ABC003\", \"010-1111-3333\");\nerror_cause = errorTable.get(error_code);\ntry{ \nif (error_cause.equals(null)) {\nerror_cause = \"등록되지 않은 회원입니다!!\";\nreturn error_cause;\n}\n} catch (java.lang.NullPointerException e){\nerror_cause = \"등록되지 않은 오류!!\";\nreturn error_cause;\n}\nfinally{\nreturn error_cause;\n}\n   }\n}\n\n수정 사항:\nErrorPkg와 java.util.HashMap import를 추가한다. 필드 선언, return, 대입문의 누락 세미콜론을 추가한다. 논리 오류는 이 단계에서 의도적으로 보존하여 실제 catch/finally 흐름을 확인한다.\n\n예상 콘솔 출력:\n** ErrorSearch.java 실행 **\n010-1111-1111\n** ErrorSearch.java 실행 **\n010-1111-2222\n** ErrorSearch.java 실행 **\n010-1111-3333\n** ErrorSearch.java 실행 **\n등록되지 않은 오류!!\n** ErrorSearch.java 실행 **\n등록되지 않은 오류!!",
+      "e": "error_cause.equals(null)은 값이 있으면 false이고 누락 키이면 NullPointerException을 던진다. 문법만 고치면 catch에서 등록되지 않은 오류!!를 설정하며 finally의 return이 catch의 반환을 덮어쓴다(같은 값이므로 결과는 오류!!). finally의 return은 예외/반환을 숨기므로 최종 수정에서는 제거하고 == null로 누락 키를 처리한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.15"
+    },
+    {
+      "type": "self",
+      "lang": "java",
+      "kind": "작업형",
+      "cat": "제2과제 인터페이스 구현",
+      "q": "④. ErrorSearch의 컴파일 오류와 null 판별 논리를 수정하시오. 등록된 키는 연락처, 미등록/null 키는 등록되지 않은 회원입니다!!를 반환해야 한다. finally return을 제거하시오.\n\n공개 원문 소스:\npublic class ErrorSearch {\n   private String error_code\n   private String error_cause\n   public String getError_code() {\nreturn error_code\n   }\n   public void setError_code(String error_code) {\nthis.error_code = error_code\n   }\n   public String getError_cause() {\nreturn error_cause\n   }\n   public String errorCheck(){\n//아래 문장은 반드시 포함하시오.\n        System.out.println(\"** ErrorSearch.java 실행 **\");\n        error_cause = null\nHashMap<String, String> errorTable = new HashMap<String, String>();\nerrorTable.put(\"ABC001\", \"010-1111-1111\");\nerrorTable.put(\"ABC002\", \"010-1111-2222\");\nerrorTable.put(\"ABC003\", \"010-1111-3333\");\nerror_cause = errorTable.get(error_code);\ntry{ \nif (error_cause.equals(null)) {\nerror_cause = \"등록되지 않은 회원입니다!!\"\nreturn error_cause\n}\n} catch (java.lang.NullPointerException e){\nerror_cause = \"등록되지 않은 오류!!\"\nreturn error_cause\n}\nfinally{\nreturn error_cause\n}\n   }\n}\n\n실행 드라이버:\npublic class Driver { public static void main(String[] args) {\n  ErrorPkg.ErrorSearch e = new ErrorPkg.ErrorSearch();\n  for (String code : new String[] {\"ABC001\", \"ABC002\", \"ABC003\", \"UNKNOWN\", null}) {\n    e.setError_code(code); System.out.println(e.errorCheck());\n  }\n} }",
+      "answer": "package ErrorPkg;\nimport java.util.HashMap;\n\npublic class ErrorSearch {\n    private String error_code;\n    private String error_cause;\n    public String getError_code() { return error_code; }\n    public void setError_code(String error_code) { this.error_code = error_code; }\n    public String getError_cause() { return error_cause; }\n    public String errorCheck() {\n        System.out.println(\"** ErrorSearch.java 실행 **\");\n        HashMap<String, String> errorTable = new HashMap<String, String>();\n        errorTable.put(\"ABC001\", \"010-1111-1111\");\n        errorTable.put(\"ABC002\", \"010-1111-2222\");\n        errorTable.put(\"ABC003\", \"010-1111-3333\");\n        error_cause = errorTable.get(error_code);\n        if (error_cause == null) {\n            error_cause = \"등록되지 않은 회원입니다!!\";\n        }\n        return error_cause;\n    }\n}\n\n수정 사항:\n세미콜론과 HashMap import, ErrorPkg 선언을 보완한다. equals(null)을 == null로 바꾸고 불필요한 catch 및 finally return을 제거한다. 기존 출력문과 getter/setter는 유지한다.\n\n예상 콘솔 출력:\n** ErrorSearch.java 실행 **\n010-1111-1111\n** ErrorSearch.java 실행 **\n010-1111-2222\n** ErrorSearch.java 실행 **\n010-1111-3333\n** ErrorSearch.java 실행 **\n등록되지 않은 회원입니다!!\n** ErrorSearch.java 실행 **\n등록되지 않은 회원입니다!!",
+      "e": "error_cause.equals(null)은 값이 있으면 false이고 누락 키이면 NullPointerException을 던진다. 문법만 고치면 catch에서 등록되지 않은 오류!!를 설정하며 finally의 return이 catch의 반환을 덮어쓴다(같은 값이므로 결과는 오류!!). finally의 return은 예외/반환을 숨기므로 최종 수정에서는 제거하고 == null로 누락 키를 처리한다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.15"
+    },
+    {
+      "type": "self",
+      "lang": "text",
+      "kind": "작업형",
+      "cat": "제4과제 화면설계",
+      "q": "⑥-1~⑥-7. 고객정보등록 스토리보드를 작성하시오. 고객번호/고객명/전화번호/고객주소/이메일/고객등급/등록·취소 버튼을 배치하고 p.23 기본정보 및 p.24 페이지설명의 입력 방식, 초기값, 동작을 빠짐없이 점검하시오.",
+      "answer": "기본 정보: 화면제목=고객정보등록, 화면경로=MY PAGE -> 고객정보등록, 화면설명=고객 상세정보를 고객정보테이블에 저장하는 화면, 문서명=스토리보드, 버전=0.1, 작성자=수험자명, 작성일=시험 시행 일자.\n⑥-1 고객번호: 텍스트 필드, 고객 식별자 코드로 소문자 영문만 입력.\n⑥-2 고객명: 텍스트 필드.\n⑥-3 전화번호: 텍스트 필드.\n⑥-4 고객주소: 텍스트 필드.\n⑥-5 이메일: 텍스트 필드, 초기 예제 값 hrd@korea.com, 사용자 입력 시 예제 값 초기화.\n⑥-6 고객등급: VIP/일반 콤보박스, 초기 선택 일반.\n⑥-7 등록/취소: 버튼.\n답안양식: 상단 화면제목/화면경로/문서명/화면설명/버전, 고객정보 영역에 ①~⑦ 요소, 작성자/작성일, 페이지설명에 각 요소의 입력 방식/초기값/동작을 대응하여 기재한다.",
+      "e": "단순 항목 나열뿐 아니라 답안양식의 기본정보와 페이지설명을 완성한다. 고객번호는 소문자 영문, 이메일 예제 값 초기화, 등급 기본값 일반이 핵심이다. 디자인 검토용 자기채점 문항이며 실행 프로그램이 아니다.",
+      "src": "공개자료_SW개발_L5_25V2.pdf p.23-24"
+    }
+  ]
+}

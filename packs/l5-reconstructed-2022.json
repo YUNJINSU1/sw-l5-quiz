@@ -1,0 +1,28 @@
+{
+  "id": "l5-reconstructed-2022",
+  "name": "SW개발 L5 2022 복원문제 (구버전 참고)",
+  "desc": "2022년 공개 저장소의 응시 후기에서 문제와 답이 함께 확인되는 지필 예시 2문항입니다. 25V2 이전 버전 시험입니다.",
+  "source": {
+    "type": "reconstructed",
+    "label": "usadev0813, LV5-external-evaluation",
+    "url": "https://github.com/usadev0813/LV5-external-evaluation/blob/e24924b1f6d1c89dbd982919d6cbb6294b5bd10a/README.md",
+    "note": "2022-12-15 최종 기록 · 단일 응시자 복원 · 지필 예시 2문항은 답 포함"
+  },
+  "questions": [
+    {
+      "type": "short", "cat": "제품소프트웨어 패키징", "kind": "복원 단답형",
+      "q": "제품 소프트웨어에서 패키지의 변경 내용을 관리하기 위한 활동이 무엇인가?",
+      "accept": ["형상관리(Configuration Management)", "형상 관리", "SCM"],
+      "e": "[2022 응시자 복원·신뢰도 높음] 공개 README에 문제와 답이 함께 기록돼 있다."
+    },
+    {
+      "type": "blanks", "cat": "애플리케이션 테스트 관리", "kind": "복원 완성형",
+      "q": "프로그램을 실행하지 않고 명세서나 소스 코드를 대상으로 분석하는 테스트를 ( ㉠ ) 테스트라고 하며, 프로그램을 실행하여 오류를 찾는 테스트를 ( ㉡ ) 테스트라고 한다. ㉠과 ㉡에 들어갈 말을 쓰시오.",
+      "blanks": [
+        { "label": "㉠", "accept": ["정적(Static)", "정적 테스트"] },
+        { "label": "㉡", "accept": ["동적(Dynamic)", "동적 테스트"] }
+      ],
+      "e": "[2022 응시자 복원·신뢰도 높음] 공개 README에 문제와 답 ‘정적, 동적’이 함께 기록돼 있다."
+    }
+  ]
+}

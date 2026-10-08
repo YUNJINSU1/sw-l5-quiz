@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+<title>문제은행</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #14161a; --muted: #5c6370;
+    --line: #dfe3e8; --card: #fff; --raise: #f5f6f8;
+    --ok: #157347; --no: #c0392b; --accent: #2f6feb;
+    --r: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14161a; --fg: #e8eaed; --muted: #9aa1ac;
+            --line: #2c3038; --card: #1b1e24; --raise: #22262e;
+            --ok: #2ea56a; --no: #e5534b; --accent: #6b9bff; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: system-ui, -apple-system, "Pretendard", "Malgun Gothic", sans-serif;
+    line-height: 1.65; touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap {
+    max-width: 720px; margin: 0 auto;
+    padding: 24px 16px calc(120px + env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; text-wrap: balance; }
+  .muted { color: var(--muted); font-size: .875rem; }
+  a { color: var(--accent); }
+
+  /* ── 컨트롤 ───────────────────────────── */
+  button, select, input[type=text] {
+    font: inherit; color: inherit; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--r);
+    padding: 10px 14px;
+    transition: background-color .12s, border-color .12s;
+  }
+  button, select { cursor: pointer; }
+  input[type=text] { width: 100%; min-width: 0; font-size: max(16px, 1rem); }
+  @media (hover: hover) {
+    button:not(:disabled):hover, select:hover { background: var(--raise); border-color: var(--muted); }
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { cursor: default; }
+  .primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  @media (hover: hover) { .primary:not(:disabled):hover { filter: brightness(1.08); background: var(--accent); } }
+  .primary:disabled { opacity: .55; }
+
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field > span { font-size: .8rem; color: var(--muted); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  select { width: 100%; }
+  .check { display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+           border: 1px solid var(--line); border-radius: var(--r); background: var(--card); cursor: pointer; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+
+  .card { background: var(--card); border: 1px solid var(--line);
+          border-radius: var(--r); padding: 16px; }
+  .exam-card { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .exam-card h2 { margin: 0; }
+  .exam-card p { margin: 0; }
+
+  /* ── 문제 ─────────────────────────────── */
+  .tag { display: inline-block; font-size: .75rem; color: var(--muted);
+         border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+  .qtext { font-size: 1.1rem; font-weight: 600; margin: 12px 0 20px;
+           white-space: pre-wrap; overflow-wrap: break-word; text-wrap: pretty; }
+  .qtext.long { font-size: 1rem; font-weight: 500; }
+  .hint { margin: -8px 0 12px; }
+  .choice {
+    display: flex; align-items: flex-start; gap: 12px; width: 100%;
+    text-align: left; margin-bottom: 10px; padding: 14px; min-height: 52px;
+    overflow-wrap: break-word;
+  }
+  .choice .key {
+    flex: none; width: 24px; height: 24px; border-radius: 6px;
+    background: var(--raise); border: 1px solid var(--line);
+    font-size: .8rem; display: grid; place-items: center; font-weight: 600;
+  }
+  .choice > span:last-child { min-width: 0; }
+  .choice[aria-pressed=true] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .choice[aria-pressed=true] .key { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .choice.correct { background: var(--ok); border-color: var(--ok); color: #fff; box-shadow: none; }
+  .choice.wrong   { background: var(--no); border-color: var(--no); color: #fff; box-shadow: none; }
+  .choice.missed  { border-color: var(--ok); box-shadow: inset 0 0 0 2px var(--ok); }
+  .choice.correct .key, .choice.wrong .key { background: rgba(255,255,255,.22); border-color: transparent; color: #fff; }
+  .choice:disabled { opacity: 1; }
+  .choice.dim:disabled { opacity: .45; }
+  .reference {
+    margin: 0 0 14px; padding: 14px 14px 14px 36px;
+    border: 1px solid var(--line); border-radius: var(--r); background: var(--raise);
+  }
+  .reference li + li { margin-top: 6px; }
+  ol.letters { list-style: lower-alpha; }
+  .self-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .self-grade .choice { justify-content: center; margin: 0; }
+
+  .row { display: grid; gap: 6px; margin-bottom: 12px; }
+  .row > .lead { font-weight: 600; overflow-wrap: break-word; }
+  .row.ok select, .row.ok input { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
+  .row.no select, .row.no input { border-color: var(--no); box-shadow: inset 0 0 0 1px var(--no); }
+  .row .fix { font-size: .875rem; color: var(--ok); }
+  input[readonly], select:disabled { opacity: 1; cursor: default; }
+
+  pre.code {
+    margin: 8px 0 0; padding: 12px; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    font: .85rem/1.5 ui-monospace, "SF Mono", Consolas, "D2Coding", monospace;
+  }
+  pre.qbody { margin: -8px 0 16px; background: var(--raise); max-height: 55vh; overflow: auto; }
+
+  #explain { border-radius: var(--r); padding: 14px; margin-top: 16px;
+             background: var(--raise); border-left: 4px solid var(--muted);
+             overflow-wrap: break-word; }
+  #explain.ok { border-left-color: var(--ok); }
+  #explain.no { border-left-color: var(--no); }
+  #explain b { display: block; margin-bottom: 4px; }
+  .detail { margin-top: 8px; }
+  .src { margin-top: 8px; }
+  .accept-btn { margin-top: 10px; }
+
+  /* ── 진행 바 & 하단 바 ────────────────── */
+  .top { position: sticky; top: 0; background: var(--bg); padding: 8px 0 12px; z-index: 2; }
+  progress { width: 100%; height: 6px; border: 0; border-radius: 3px;
+             background: var(--line); appearance: none; display: block; }
+  progress::-webkit-progress-bar { background: var(--line); border-radius: 3px; }
+  progress::-webkit-progress-value { background: var(--accent); border-radius: 3px; }
+  progress::-moz-progress-bar { background: var(--accent); border-radius: 3px; }
+  .stats { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  #timer { font-weight: 600; color: var(--fg); }
+  #timer.warn { color: var(--no); }
+
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 3;
+    background: var(--bg); border-top: 1px solid var(--line);
+    padding: 12px max(16px, env(safe-area-inset-left))
+             calc(12px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right));
+  }
+  .bar > div { max-width: 720px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  .bar .primary { flex: 1; justify-content: center; }
+  kbd { font: inherit; font-size: .75rem; background: var(--raise);
+        border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+
+  table.units { width: 100%; border-collapse: collapse; margin: 16px 0 8px; }
+  table.units th, table.units td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  table.units th { font-size: .8rem; color: var(--muted); font-weight: 500; }
+  table.units .num { text-align: right; white-space: nowrap; }
+  .pass { color: var(--ok); font-weight: 600; }
+  .fail { color: var(--no); font-weight: 600; }
+
+  ol.review { padding-left: 20px; }
+  ol.review li { margin-bottom: 14px; }
+  ol.review .q { white-space: pre-wrap; overflow-wrap: break-word; }
+  .hide { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── 설정 화면 ───────────────────────── -->
+  <section id="setup">
+    <h1>문제은행</h1>
+    <p class="muted" id="packdesc">불러오는 중…</p>
+    <p class="muted" id="packsource"></p>
+
+    <div class="grid" style="margin:20px 0 12px">
+      <label class="field"><span>과목</span><select id="pack"></select></label>
+      <label class="field"><span>분류</span><select id="cat"></select></label>
+      <label class="field"><span>문항 수</span>
+        <select id="count">
+          <option value="0">전체</option>
+          <option>10</option><option>20</option><option>40</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="check"><input type="checkbox" id="wrongOnly">
+      <span>오답만 풀기 <span class="muted" id="wrongInfo"></span></span>
+    </label>
+
+    <div class="card exam-card hide" id="examBox">
+      <h2>실전 모의고사</h2>
+      <p class="muted" id="examInfo"></p>
+      <button id="examStart">모의고사 시작</button>
+    </div>
+
+    <p class="muted" style="margin-top:20px">
+      키보드: <kbd>1</kbd>–<kbd>9</kbd> 보기 선택 · <kbd>Enter</kbd> 채점·다음 문제
+    </p>
+  </section>
+
+  <!-- ── 풀이 화면 ───────────────────────── -->
+  <section id="quiz" class="hide">
+    <div class="top">
+      <progress id="bar" value="0" max="1" aria-label="진행률"></progress>
+      <div class="stats muted">
+        <span id="pos"></span>
+        <span><span id="score" aria-live="polite"></span> <span id="timer" class="hide" role="timer"></span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag" id="qcat"></span>
+      <h2 class="qtext" id="q"></h2>
+      <pre class="code qbody hide" id="qbody"></pre>
+      <div id="answer"></div>
+      <div id="explain" class="hide" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ── 결과 화면 ───────────────────────── -->
+  <section id="done" class="hide">
+    <h1 id="resultTitle"></h1>
+    <p class="muted" id="result"></p>
+    <div id="unitBox" class="hide">
+      <table class="units">
+        <thead><tr><th>능력단위</th><th class="num">정답</th><th class="num">점수</th><th class="num">판정</th></tr></thead>
+        <tbody id="units"></tbody>
+      </table>
+      <p class="muted" id="examNote"></p>
+    </div>
+    <div id="reviewBox" class="hide" style="margin-top:20px">
+      <h2>틀린 문제</h2>
+      <ol class="review" id="review"></ol>
+    </div>
+  </section>
+</div>
+
+<!-- ── 하단 액션 바 ──────────────────────── -->
+<div class="bar">
+  <div>
+    <button id="quit" class="hide">그만두기</button>
+    <button id="retryWrong" class="hide">틀린 문제 다시</button>
+    <button id="reset" class="hide">오답 초기화</button>
+    <button id="prev" class="hide">이전</button>
+    <button id="go" class="primary">시작</button>
+  </div>
+</div>
+
+<script src="quiz-logic.js"></script>
+<script>
+const L = QuizLogic;
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const n = Object.assign(document.createElement(tag), props);
+  n.append(...kids.filter(k => k != null));
+  return n;
+};
+const TEXT_TYPES = ["short", "blanks", "list"];
+
+let pack = null, wrong = new Set();
+// 연습: deck/i/hit/missed. 모의고사: paper/responses/results.
+let mode = "practice", deck = [], i = 0, hit = 0, missed = [], answered = false, view = null;
+let paper = [], responses = [], results = [], deadline = 0, ticker = 0, timedOut = false;
+
+const wrongKey = () => `question-bank:${pack.id}:wrong`;
+const saveWrong = () => localStorage.setItem(wrongKey(), JSON.stringify([...wrong]));
+const show = name => ["setup", "quiz", "done"].forEach(s => $(s).classList.toggle("hide", s !== name));
+const bar = (...visible) => ["quit", "retryWrong", "reset", "prev"].forEach(b =>
+  $(b).classList.toggle("hide", !visible.includes(b)));
+const setGo = (text, onclick, disabled = false) => {
+  $("go").textContent = text; $("go").onclick = onclick; $("go").disabled = disabled;
+};
+const record = (q, ok) => { if (ok) wrong.delete(q.id); else wrong.add(q.id); };
+
+// ── 로딩 ─────────────────────────────────
+async function boot() {
+  const packs = await (await fetch("packs/index.json")).json();
+  $("pack").innerHTML = "";
+  packs.forEach(p => $("pack").append(el("option", { value: p.file, textContent: p.name })));
+  const last = localStorage.getItem("question-bank:lastPack");
+  if (last && packs.some(p => p.file === last)) $("pack").value = last;
+  await loadPack();
+}
+
+async function loadPack() {
+  localStorage.setItem("question-bank:lastPack", $("pack").value);
+  pack = await (await fetch("packs/" + $("pack").value)).json();
+  pack.questions.forEach(q => q.id = L.qid(q.q));
+
+  const known = new Set(pack.questions.map(q => q.id));
+  wrong = new Set(JSON.parse(localStorage.getItem(wrongKey()) || "[]").filter(id => known.has(id)));
+  $("packdesc").textContent = `${pack.desc || pack.name} · 총 ${pack.questions.length}문항`;
+  $("packsource").replaceChildren();
+  if (pack.source) {
+    $("packsource").append(el("a", { href: pack.source.url, target: "_blank", rel: "noopener",
+      textContent: `출처: ${pack.source.label}` }));
+    if (pack.source.note) $("packsource").append(` · ${pack.source.note}`);
+  }
+  $("cat").replaceChildren(el("option", { value: "", textContent: "전체" }),
+    ...[...new Set(pack.questions.map(q => q.cat))].map(c => el("option", { value: c, textContent: c })));
+
+  $("examBox").classList.toggle("hide", !pack.exam);
+  if (pack.exam) {
+    const { minutes, perUnit, pass, units } = pack.exam;
+    $("examInfo").textContent = `${units.join(" · ")} — 능력단위마다 자동채점 문항 ${perUnit}개씩, ${minutes}분. ` +
+      `능력단위별 ${pass}점 이상이면 Pass. 공식 문항 수는 공개되지 않아 임의로 정한 구성입니다.`;
+  }
+  toSetup();
+}
+
+// ── 화면 전환 ────────────────────────────
+function toSetup() {
+  stopTimer();
+  mode = "practice";
+  show("setup");
+  const n = wrong.size;
+  $("wrongInfo").textContent = n ? `· 현재 ${n}문항` : "· 아직 없음";
+  $("wrongOnly").disabled = !n;
+  if (!n) $("wrongOnly").checked = false;
+  bar(...(n ? ["reset"] : []));
+  setGo("시작", start);
+}
+
+function start(ids) {
+  const cat = $("cat").value, limit = +$("count").value;
+  deck = Array.isArray(ids)
+    ? pack.questions.filter(q => ids.includes(q.id))
+    : pack.questions.filter(q =>
+        (!cat || q.cat === cat) && (!$("wrongOnly").checked || wrong.has(q.id)));
+  mode = "practice";
+  if (!deck.length) { finish("조건에 맞는 문제가 없습니다"); return; }
+
+  deck = L.shuffle(deck);
+  if (!Array.isArray(ids) && limit) deck = deck.slice(0, limit);
+  i = 0; hit = 0; missed = [];
+  show("quiz");
+  $("timer").classList.add("hide");
+  bar("quit");
+  $("quit").onclick = toSetup;
+  render();
+}
+
+// ── 답안 입력 UI ─────────────────────────
+// 유형마다 {read, ready, lock}을 돌려준다. onChange는 입력이 바뀔 때마다 불린다.
+// instant=true(연습 모드 단일 선택)면 보기를 누르는 즉시 onSubmit을 부른다.
+function mount(q, box, initial, { onChange, onSubmit, instant }) {
+  const type = L.questionType(q);
+  box.replaceChildren();
+
+  if (type === "choice" || type === "multi") {
+    const multi = type === "multi";
+    let picked = multi ? new Set(initial || []) : initial;
+    const hint = multi ? el("p", { className: "muted hint" }) : null;
+    const want = multi ? q.a.length : 1;
+    const updateHint = () => hint && (hint.textContent = `${want}개를 고르세요 · ${picked.size}개 선택`);
+    if (hint) box.append(hint);
+    const buttons = L.shuffle(q.c.map((text, idx) => ({ text, idx }))).map(({ text, idx }, n) => {
+      const b = el("button", { className: "choice", type: "button" },
+        el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }), el("span", { textContent: text }));
+      b.dataset.idx = idx;
+      const sync = () => b.setAttribute("aria-pressed", multi ? picked.has(idx) : picked === idx);
+      sync();
+      b.onclick = () => {
+        if (multi) { picked.has(idx) ? picked.delete(idx) : picked.add(idx); }
+        else picked = idx;
+        buttons.forEach(x => x.sync());
+        updateHint();
+        onChange?.();
+        if (instant) onSubmit();
+      };
+      b.sync = sync;
+      box.append(b);
+      return b;
+    });
+    updateHint();
+    return {
+      keys: buttons,
+      read: () => (multi ? [...picked] : picked),
+      ready: () => (multi ? picked.size === want : Number.isInteger(picked)),
+      lock() {
+        const right = new Set(multi ? q.a : [q.a]);
+        buttons.forEach(b => {
+          const idx = +b.dataset.idx, chose = multi ? picked.has(idx) : picked === idx;
+          b.disabled = true;
+          b.removeAttribute("aria-pressed");
+          if (right.has(idx)) b.classList.add(chose ? "correct" : "missed");
+          else if (chose) b.classList.add("wrong");
+          else b.classList.add("dim");
+        });
+      },
+    };
+  }
+
+  if (type === "match") {
+    // 답지는 섞어서 a, b, c…를 새로 붙인다. 채점은 원래 인덱스로 한다.
+    const order = L.shuffle(q.right.map((_, idx) => idx));
+    const letter = idx => L.RIGHT_LABELS[order.indexOf(idx)];
+    box.append(el("ol", { className: "reference letters" },
+      ...order.map(idx => el("li", { textContent: q.right[idx] }))));
+    const rows = q.left.map((text, n) => {
+      const sel = el("select", { ariaLabel: `${L.LEFT_LABELS[n]}. ${text}의 짝` },
+        el("option", { value: "", textContent: "선택" }),
+        ...order.map(idx => el("option", { value: idx, textContent: `${letter(idx)}. ${q.right[idx]}` })));
+      if (Number.isInteger(initial?.[n])) sel.value = initial[n];
+      sel.onchange = () => onChange?.();
+      const row = el("label", { className: "row" },
+        el("span", { className: "lead", textContent: `${L.LEFT_LABELS[n]}. ${text}` }), sel);
+      box.append(row);
+      return { row, sel };
+    });
+    return {
+      read: () => rows.map(({ sel }) => (sel.value === "" ? undefined : +sel.value)),
+      ready: () => rows.every(({ sel }) => sel.value !== ""),
+      lock(res) {
+        rows.forEach(({ row, sel }, n) => {
+          sel.disabled = true;
+          row.classList.add(res.parts[n] ? "ok" : "no");
+          if (!res.parts[n]) row.append(el("span", { className: "fix",
+            textContent: `정답: ${letter(q.a[n])}. ${q.right[q.a[n]]}` }));
+        });
+      },
+    };
+  }
+
+  if (TEXT_TYPES.includes(type)) {
+    const labels = type === "short" ? [null]
+      : type === "blanks" ? q.blanks.map(b => b.label)
+      : Array.from({ length: q.n }, (_, n) => `${n + 1}`);
+    const values = type === "short" ? [initial ?? ""] : (initial || []);
+    if (type === "list") box.append(el("p", { className: "muted hint", textContent: `${q.n}가지를 순서와 상관없이 쓰세요` }));
+    const rows = labels.map((label, n) => {
+      const input = el("input", { type: "text", autocomplete: "off", spellcheck: false,
+        value: values[n] ?? "", ariaLabel: label ? `${label} 답` : "답" });
+      input.setAttribute("autocapitalize", "off");
+      input.setAttribute("enterkeyhint", n < labels.length - 1 ? "next" : "done");
+      input.oninput = () => onChange?.();
+      input.onkeydown = e => {
+        if (e.key !== "Enter" || e.isComposing) return;
+        e.preventDefault();
+        if (n < rows.length - 1) rows[n + 1].input.focus();
+        else if (!$("go").disabled) $("go").click();
+      };
+      const row = el("label", { className: "row" }, label ? el("span", { className: "lead", textContent: label }) : null, input);
+      box.append(row);
+      return { row, input };
+    });
+    setTimeout(() => rows[0].input.focus({ preventScroll: true }), 0);
+    return {
+      read: () => (type === "short" ? rows[0].input.value : rows.map(r => r.input.value)),
+      ready: () => rows.some(r => r.input.value.trim()),
+      lock(res) {
+        rows.forEach(({ row, input }, n) => {
+          input.readOnly = true;
+          row.classList.add((res.parts ? res.parts[n] : res.ok) ? "ok" : "no");
+        });
+      },
+    };
+  }
+
+  // self: 참고 보기만 보여준다
+  if (q.c) box.append(el("ol", { className: "reference" }, ...q.c.map(t => el("li", { textContent: t }))));
+  return { read: () => undefined, ready: () => true, lock() {} };
+}
+
+// 해설 블록: 제목, 정답, 해설, 출처
+function explainBlock(q, title) {
+  const parts = [el("b", { textContent: title })];
+  if (L.isAuto(q)) parts.push(el("div", { textContent: `정답: ${L.answerText(q)}` }));
+  else if (q.lang) parts.push(el("pre", { className: "code", textContent: q.answer }));
+  else parts.push(el("div", { textContent: q.answer, style: "white-space:pre-wrap" }));
+  if (q.e) parts.push(el("div", { className: "muted detail", textContent: q.e, style: "white-space:pre-wrap" }));
+  if (q.src) parts.push(el("div", { className: "muted src", textContent: `출처: ${q.src}` }));
+  return parts;
+}
+
+// ── 연습 모드 ────────────────────────────
+// 코드 문항(lang)은 첫 줄을 지시문으로, 나머지(표·소스)를 고정폭으로 보여준다
+function header(q) {
+  $("qcat").textContent = [q.cat, q.kind].filter(Boolean).join(" · ");
+  const cut = q.lang ? q.q.indexOf("\n") : -1;
+  const head = cut > 0 ? q.q.slice(0, cut) : q.q;
+  $("q").textContent = head;
+  $("q").classList.toggle("long", head.length > 160 || head.split("\n").length > 6);
+  $("qbody").textContent = cut > 0 ? q.q.slice(cut + 1).replace(/^\n+/, "") : "";
+  $("qbody").classList.toggle("hide", cut <= 0);
+  $("explain").className = "hide";
+  window.scrollTo({ top: 0 });
+}
+
+function render() {
+  const q = deck[i];
+  answered = false;
+  $("bar").max = deck.length; $("bar").value = i;
+  $("pos").textContent = `${i + 1} / ${deck.length}`;
+  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  header(q);
+
+  const type = L.questionType(q);
+  if (type === "self") {
+    view = mount(q, $("answer"), undefined, {});
+    setGo("정답 보기", revealSelf);
+    return;
+  }
+  const instant = type === "choice";
+  view = mount(q, $("answer"), undefined, {
+    instant,
+    onSubmit: submit,
+    onChange: () => { if (!answered) $("go").disabled = !view.ready(); },
+  });
+  if (instant) setGo("답을 선택하세요", null, true);
+  else setGo("채점", submit, true);
+}
+
+function submit() {
+  if (answered || !view.ready()) return;
+  answered = true;
+  const q = deck[i], res = L.grade(q, view.read());
+  view.lock(res);
+  if (res.ok) hit++; else missed.push(q);
+  record(q, res.ok); saveWrong();
+
+  $("explain").className = res.ok ? "ok" : "no";
+  $("explain").replaceChildren(...explainBlock(q, res.ok ? "정답" : "오답"));
+  if (!res.ok && TEXT_TYPES.includes(L.questionType(q))) {
+    const btn = el("button", { className: "accept-btn", type: "button", textContent: "정답으로 인정" });
+    btn.onclick = () => {
+      hit++; missed = missed.filter(m => m !== q);
+      record(q, true); saveWrong();
+      $("explain").className = "ok";
+      $("explain").firstChild.textContent = "정답 (직접 인정)";
+      btn.remove();
+      $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+    };
+    $("explain").append(btn);
+  }
+  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  setGo(i + 1 < deck.length ? "다음 문제" : "결과 보기", next);
+}
+
+function revealSelf() {
+  const q = deck[i];
+  $("explain").className = "";
+  $("explain").replaceChildren(...explainBlock(q, "모범답안"));
+  const grade = el("div", { className: "self-grade" });
+  const btns = [["맞음", true], ["틀림", false]].map(([text, ok], n) => {
+    const b = el("button", { className: "choice", type: "button" },
+      el("span", { className: "key", ariaHidden: "true", textContent: n + 1 }), el("span", { textContent: text }));
+    b.onclick = () => selfGrade(ok, b, btns);
+    grade.append(b);
+    return b;
+  });
+  view.keys = btns;
+  $("explain").append(grade);
+  setGo("스스로 채점하세요", null, true);
+}
+
+function selfGrade(ok, btn, btns) {
+  if (answered) return;
+  answered = true;
+  const q = deck[i];
+  btns.forEach(b => { b.disabled = true; b.classList.add("dim"); });
+  btn.classList.remove("dim");
+  btn.classList.add(ok ? "correct" : "wrong");
+  if (ok) hit++; else missed.push(q);
+  record(q, ok); saveWrong();
+  $("explain").className = ok ? "ok" : "no";
+  $("explain").firstChild.textContent = ok ? "맞음 · 모범답안" : "틀림 · 모범답안";
+  $("score").textContent = `정답 ${hit} · 오답 ${missed.length}`;
+  setGo(i + 1 < deck.length ? "다음 문제" : "결과 보기", next);
+}
+
+function next() {
+  if (++i < deck.length) return render();
+  $("bar").value = deck.length;
+  finish();
+}
+
+function reviewItem(q, extra = []) {
+  return el("li", {}, el("div", { className: "q", textContent: q.q }),
+    ...extra,
+    el("div", { className: "muted", textContent: `정답: ${L.isAuto(q) ? L.answerText(q) : q.answer}` }),
+    q.e ? el("div", { className: "muted", textContent: q.e }) : null);
+}
+
+function finish(msg) {
+  show("done");
+  $("unitBox").classList.add("hide");
+  bar(...(wrong.size ? ["reset"] : []));
+  if (msg) {
+    $("resultTitle").textContent = msg;
+    $("result").textContent = "";
+    $("reviewBox").classList.add("hide");
+  } else {
+    const pct = Math.round(hit / deck.length * 100);
+    $("resultTitle").textContent = `${deck.length}문제 중 ${hit}문제 정답 (${pct}%)`;
+    $("result").textContent = `오답노트에 ${wrong.size}문항이 남아 있습니다.`;
+    $("reviewBox").classList.toggle("hide", !missed.length);
+    $("review").replaceChildren(...missed.map(q => reviewItem(q)));
+    const ids = missed.map(q => q.id);
+    if (ids.length) { bar("retryWrong", ...(wrong.size ? ["reset"] : [])); $("retryWrong").onclick = () => start(ids); }
+  }
+  setGo("설정으로", toSetup);
+}
+
+// ── 모의고사 ─────────────────────────────
+function startExam() {
+  paper = L.buildExam(pack.questions, pack.exam);
+  responses = new Array(paper.length);
+  results = []; timedOut = false;
+  mode = "exam"; i = 0;
+  deadline = Date.now() + pack.exam.minutes * 60_000;
+  show("quiz");
+  $("timer").classList.remove("hide");
+  ticker = setInterval(tick, 500);
+  tick();
+  $("quit").onclick = () => { if (confirm("모의고사를 그만두면 답안이 사라집니다.")) toSetup(); };
+  $("prev").onclick = () => { if (i > 0) { i--; renderExam(); } };
+  renderExam();
+}
+
+function stopTimer() { clearInterval(ticker); ticker = 0; }
+
+function tick() {
+  const left = Math.max(0, deadline - Date.now());
+  const s = Math.ceil(left / 1000);
+  $("timer").textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  $("timer").classList.toggle("warn", left < 5 * 60_000);
+  if (left === 0 && mode === "exam" && ticker) { timedOut = true; submitExam(true); }
+}
+
+const isAnswered = (q, r) => L.responseText(q, r) !== "(미응답)";
+
+function renderExam() {
+  const q = paper[i];
+  $("bar").max = paper.length; $("bar").value = i;
+  $("pos").textContent = `${i + 1} / ${paper.length} · ${q.cat}`;
+  const updateCount = () => {
+    $("score").textContent = `응답 ${paper.filter((p, k) => isAnswered(p, responses[k])).length}/${paper.length} ·`;
+  };
+  header(q);
+  view = mount(q, $("answer"), responses[i], {
+    onChange: () => { responses[i] = view.read(); updateCount(); },
+  });
+  updateCount();
+  bar("quit", "prev");
+  $("prev").disabled = i === 0;
+  const last = i === paper.length - 1;
+  setGo(last ? "제출" : "다음", () => { if (last) submitExam(false); else { i++; renderExam(); } });
+}
+
+function submitExam(auto) {
+  const blank = paper.filter((q, k) => !isAnswered(q, responses[k])).length;
+  if (!auto && blank && !confirm(`답하지 않은 문항이 ${blank}개 있습니다. 제출할까요?`)) return;
+  stopTimer();
+  results = paper.map((q, k) => L.grade(q, responses[k]).ok);
+  paper.forEach((q, k) => record(q, results[k]));
+  saveWrong();
+  showExamResult();
+}
+
+function showExamResult() {
+  show("done");
+  const units = L.scoreExam(paper, results, pack.exam);
+  const passed = units.filter(u => u.pass).length;
+  $("resultTitle").textContent = `${units.length}개 능력단위 중 ${passed}개 Pass`;
+  $("result").textContent = (timedOut ? "시간이 끝나 자동 제출했습니다. " : "") +
+    `${paper.length}문제 중 ${results.filter(Boolean).length}문제 정답`;
+  $("unitBox").classList.remove("hide");
+  $("units").replaceChildren(...units.map(u => el("tr", {},
+    el("td", { textContent: u.unit }),
+    el("td", { className: "num", textContent: `${u.correct}/${u.total}` }),
+    el("td", { className: "num", textContent: `${u.score}점` }),
+    el("td", { className: `num ${u.pass ? "pass" : "fail"}`, textContent: u.pass ? "Pass" : "Fail" }))));
+  $("examNote").textContent = "실제 시험은 작업형 6개를 포함한 필수능력단위 10개 중 7개 이상 Pass면 합격입니다.";
+
+  const wrongIdx = paper.map((_, k) => k).filter(k => !results[k]);
+  $("reviewBox").classList.toggle("hide", !wrongIdx.length);
+  $("review").replaceChildren(...wrongIdx.map(k => {
+    const q = paper[k];
+    const mine = el("div", { className: "muted", textContent: `내 답: ${L.responseText(q, responses[k])}` });
+    const extra = [mine];
+    if (TEXT_TYPES.includes(L.questionType(q)) && isAnswered(q, responses[k])) {
+      const btn = el("button", { className: "accept-btn", type: "button", textContent: "정답으로 인정" });
+      btn.onclick = () => { results[k] = true; record(q, true); saveWrong(); showExamResult(); };
+      extra.push(btn);
+    }
+    return reviewItem(q, extra);
+  }));
+  const ids = wrongIdx.map(k => paper[k].id);
+  bar(...(ids.length ? ["retryWrong"] : []));
+  $("retryWrong").onclick = () => start(ids);
+  setGo("설정으로", toSetup);
+}
+
+// ── 키보드 ───────────────────────────────
+document.addEventListener("keydown", e => {
+  if (e.target.matches("select, input, textarea") || e.isComposing) return;
+  if (e.key === "Enter" && !$("go").disabled && !$("quiz").classList.contains("hide") || e.key === "Enter" && !$("go").disabled && e.target === document.body) {
+    e.preventDefault(); $("go").click(); return;
+  }
+  if (/^[1-9]$/.test(e.key) && view?.keys && !$("quiz").classList.contains("hide")) {
+    const b = view.keys[+e.key - 1];
+    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+  }
+});
+
+$("pack").onchange = loadPack;
+$("examStart").onclick = startExam;
+$("reset").onclick = () => {
+  if (confirm(`'${pack.name}' 오답노트 ${wrong.size}문항을 모두 지웁니다. 되돌릴 수 없습니다.`)) {
+    wrong.clear(); saveWrong(); toSetup();
+  }
+};
+window.addEventListener("beforeunload", e => { if (mode === "exam" && ticker) e.preventDefault(); });
+
+boot().catch(e => {
+  document.querySelector(".wrap").replaceChildren(
+    el("h1", { textContent: "불러오지 못했습니다" }),
+    el("p", { className: "muted", textContent: String(e) }),
+    el("p", { textContent: "파일을 직접 열지 말고 서버로 실행하세요: python3 -m http.server 8000 → http://localhost:8000" }));
+  document.querySelector(".bar").remove();
+});
+</script>
+</body>
+</html>
